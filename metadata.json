@@ -1,0 +1,6 @@
+{
+  "name": "FlashGen AI",
+  "description": "AI-powered flashcard generator and spaced repetition study system with multimodal file support",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

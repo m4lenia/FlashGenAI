@@ -1,0 +1,67 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile with role-based access information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "email": { "type": "string", "description": "User email address" },
+        "displayName": { "type": "string", "description": "User display name" },
+        "photoURL": { "type": "string", "description": "Profile picture URL" },
+        "role": { "type": "string", "enum": ["user", "manager", "admin"] },
+        "stats": { "type": "object", "description": "User study stats and streak metrics" },
+        "createdAt": { "type": "string", "description": "Account creation timestamp" },
+        "lastLoginAt": { "type": "string", "description": "Last sign-in timestamp" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Deck": {
+      "title": "Deck",
+      "description": "User created or generated flashcard deck",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string", "maxLength": 128 },
+        "description": { "type": "string", "maxLength": 500 },
+        "tags": { "type": "array" },
+        "cards": { "type": "array" },
+        "color": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "title"]
+    },
+    "TestResult": {
+      "title": "TestResult",
+      "description": "Completed topic assessment result",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "testTitle": { "type": "string" },
+        "topic": { "type": "string" },
+        "score": { "type": "number" },
+        "totalQuestions": { "type": "number" },
+        "percentage": { "type": "number" },
+        "completedAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "score", "totalQuestions", "percentage"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Stores user profile data and manager/admin role assignment and study progress"
+    },
+    "/decks/{deckId}": {
+      "schema": "Deck",
+      "description": "Flashcard decks owned by users or accessible by manager"
+    },
+    "/testResults/{resultId}": {
+      "schema": "TestResult",
+      "description": "Recorded topic test outcomes for study analytics and manager oversight"
+    }
+  }
+}
