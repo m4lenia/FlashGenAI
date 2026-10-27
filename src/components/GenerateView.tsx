@@ -504,60 +504,61 @@ export const GenerateView: React.FC<GenerateViewProps> = ({ onDeckCreated, onCan
   // CONFIGURATION & UPLOAD VIEW
   // ==========================================
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
+    <div className="max-w-3xl mx-auto px-4 py-6">
       {/* Title */}
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/60 mb-3">
-          <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
-          <span>Multimodal File Understanding</span>
+      <div className="mb-6 pb-4 border-b border-neutral-200 dark:border-neutral-800">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-[10px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400">
+            Multimodal Extraction
+          </span>
         </div>
-        <h1 className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
+        <h1 className="text-xl font-bold tracking-tight text-neutral-900 dark:text-white">
           Generate Spaced Repetition Flashcards
         </h1>
-        <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400 max-w-lg mx-auto">
-          Upload any lecture PDF, lecture slides, notes photos, Word document, or raw notes.
-          Gemini extracts the highest-yield active recall flashcards in seconds.
+        <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400 max-w-xl">
+          Upload PDFs, slides, lecture transcripts, or textbook chapters.
+          AI extracts high-yield active-recall questions calibrated for spaced recall.
         </p>
       </div>
 
       {/* Tabs: File Upload vs Text */}
-      <div className="flex border-b border-neutral-200 dark:border-neutral-800 mb-6">
+      <div className="flex border-b border-neutral-200 dark:border-neutral-800 mb-5">
         <button
           onClick={() => setActiveTab('upload')}
-          className={`flex items-center gap-2 pb-3 px-4 text-sm font-semibold border-b-2 transition-all ${
+          className={`flex items-center gap-2 pb-2.5 px-3 text-xs font-semibold border-b-2 transition-colors ${
             activeTab === 'upload'
-              ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
+              ? 'border-neutral-900 dark:border-white text-neutral-900 dark:text-white'
               : 'border-transparent text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
           }`}
         >
-          <UploadCloud className="w-4 h-4" />
-          Upload Document / Slides / Image
+          <UploadCloud className="w-3.5 h-3.5" />
+          <span>Upload Document or Slides</span>
         </button>
         <button
           onClick={() => setActiveTab('text')}
-          className={`flex items-center gap-2 pb-3 px-4 text-sm font-semibold border-b-2 transition-all ${
+          className={`flex items-center gap-2 pb-2.5 px-3 text-xs font-semibold border-b-2 transition-colors ${
             activeTab === 'text'
-              ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
+              ? 'border-neutral-900 dark:border-white text-neutral-900 dark:text-white'
               : 'border-transparent text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
           }`}
         >
-          <FileText className="w-4 h-4" />
-          Paste Notes or Text
+          <FileText className="w-3.5 h-3.5" />
+          <span>Paste Notes or Text</span>
         </button>
       </div>
 
       {/* Input Section */}
       {activeTab === 'upload' ? (
-        <div className="mb-6">
+        <div className="mb-5">
           {!uploadedFile ? (
             <div
               onDragOver={onDragOver}
               onDragLeave={onDragLeave}
               onDrop={onDrop}
               onClick={() => fileInputRef.current?.click()}
-              className={`border-2 border-dashed rounded-2xl p-8 sm:p-12 text-center cursor-pointer transition-all duration-200 ${
+              className={`border border-dashed rounded-xl p-8 sm:p-10 text-center cursor-pointer transition-colors ${
                 isDragOver
-                  ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/20 scale-[0.99]'
+                  ? 'border-indigo-500 bg-indigo-50/30 dark:bg-indigo-950/20'
                   : 'border-neutral-300 dark:border-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-600 bg-neutral-50/50 dark:bg-neutral-900/40'
               }`}
             >
@@ -572,37 +573,37 @@ export const GenerateView: React.FC<GenerateViewProps> = ({ onDeckCreated, onCan
                   }
                 }}
               />
-              <div className="w-14 h-14 mx-auto rounded-2xl bg-indigo-100 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-4 shadow-sm">
-                <UploadCloud className="w-7 h-7" />
+              <div className="w-10 h-10 mx-auto rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 flex items-center justify-center mb-3">
+                <UploadCloud className="w-5 h-5" />
               </div>
-              <p className="text-base font-semibold text-neutral-800 dark:text-neutral-200 mb-1">
-                Drag & drop your study material here
+              <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-1">
+                Drag and drop study files here, or click to browse
               </p>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 max-w-sm mx-auto mb-4">
-                Supports <span className="font-semibold text-neutral-700 dark:text-neutral-300">PDF, DOCX, TXT, PPTX</span>, or photos/screenshots of notes and slides (<span className="font-semibold text-neutral-700 dark:text-neutral-300">PNG, JPG, WebP</span>).
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 max-w-sm mx-auto mb-3">
+                Supports PDF, DOCX, TXT, PPTX, and image formats (PNG, JPG).
               </p>
-              <span className="inline-flex items-center px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 shadow-sm hover:bg-neutral-50">
-                Browse Files
+              <span className="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 shadow-2xs hover:bg-neutral-50">
+                Select File
               </span>
             </div>
           ) : (
-            <div className="p-4 rounded-xl border border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/40 dark:bg-indigo-950/20 flex items-center justify-between">
+            <div className="p-3.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex items-center justify-between">
               <div className="flex items-center space-x-3 truncate">
-                <div className="w-10 h-10 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0">
-                  <FileCheck2 className="w-5 h-5" />
+                <div className="w-8 h-8 rounded-md bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 flex items-center justify-center shrink-0">
+                  <FileCheck2 className="w-4 h-4" />
                 </div>
                 <div className="truncate">
-                  <div className="text-sm font-bold text-neutral-900 dark:text-white truncate">
+                  <div className="text-xs font-semibold text-neutral-900 dark:text-white truncate">
                     {uploadedFile.name}
                   </div>
-                  <div className="text-xs text-neutral-500 dark:text-neutral-400">
+                  <div className="text-[11px] text-neutral-500 dark:text-neutral-400 font-mono">
                     {uploadedFile.sizeFormatted} • {uploadedFile.mimeType}
                   </div>
                 </div>
               </div>
               <button
                 onClick={() => setUploadedFile(null)}
-                className="p-2 text-neutral-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-neutral-200/50 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+                className="p-1.5 text-neutral-400 hover:text-rose-500 rounded transition-colors"
                 title="Remove file"
               >
                 <Trash2 className="w-4 h-4" />
@@ -611,47 +612,47 @@ export const GenerateView: React.FC<GenerateViewProps> = ({ onDeckCreated, onCan
           )}
         </div>
       ) : (
-        <div className="mb-6">
-          <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2">
-            Paste Notes, Lecture Transcript, or Textbook Content
+        <div className="mb-5">
+          <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+            Paste Notes, Lecture Transcript, or Syllabus Content
           </label>
           <textarea
             value={rawText}
             onChange={(e) => setRawText(e.target.value)}
             rows={8}
             placeholder="Paste your study notes, key terms, syllabus objectives, or lecture transcript here..."
-            className="w-full text-sm p-4 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+            className="w-full text-xs p-3 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
           />
-          <div className="flex justify-between items-center text-xs text-neutral-400 mt-1.5 px-1">
+          <div className="flex justify-between items-center text-[11px] text-neutral-400 font-mono mt-1 px-1">
             <span>{rawText.length} characters</span>
-            <span>Recommended: 200 - 40,000 characters</span>
+            <span>Recommended: 200 - 40,000</span>
           </div>
         </div>
       )}
 
-      {/* Generation Options Accordion/Grid */}
-      <div className="p-5 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/60 shadow-sm mb-6 space-y-5">
-        <div className="flex items-center gap-2 pb-3 border-b border-neutral-100 dark:border-neutral-800">
-          <Sliders className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-          <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
-            Generation Settings
+      {/* Generation Settings */}
+      <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 mb-5 space-y-4">
+        <div className="flex items-center gap-2 pb-2.5 border-b border-neutral-100 dark:border-neutral-800">
+          <Sliders className="w-3.5 h-3.5 text-neutral-500" />
+          <h2 className="text-xs font-bold text-neutral-900 dark:text-white">
+            Generation Parameters
           </h2>
         </div>
 
         {/* Number of Cards */}
         <div>
-          <label className="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-2">
-            Number of Cards
+          <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+            Card Count
           </label>
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-4 gap-1.5">
             {[10, 15, 20, 30].map((num) => (
               <button
                 key={num}
                 type="button"
                 onClick={() => setCount(num)}
-                className={`py-2 text-sm font-semibold rounded-lg border transition-all ${
+                className={`py-1.5 text-xs font-medium rounded-md border transition-colors ${
                   count === num
-                    ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 shadow-sm'
+                    ? 'border-neutral-900 dark:border-white bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-semibold'
                     : 'border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-850'
                 }`}
               >
@@ -663,23 +664,23 @@ export const GenerateView: React.FC<GenerateViewProps> = ({ onDeckCreated, onCan
 
         {/* Difficulty */}
         <div>
-          <label className="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-2">
-            Difficulty Level
+          <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+            Difficulty Calibration
           </label>
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-4 gap-1.5">
             {[
-              { id: 'mixed', label: 'Balanced Mix' },
-              { id: 'easy', label: 'Easy' },
-              { id: 'medium', label: 'Medium' },
-              { id: 'hard', label: 'Hard' },
+              { id: 'mixed', label: 'Balanced' },
+              { id: 'easy', label: 'Foundational' },
+              { id: 'medium', label: 'Standard' },
+              { id: 'hard', label: 'Exam Hard' },
             ].map((d) => (
               <button
                 key={d.id}
                 type="button"
                 onClick={() => setDifficulty(d.id as GenerationDifficulty)}
-                className={`py-2 text-xs font-semibold rounded-lg border transition-all ${
+                className={`py-1.5 text-xs font-medium rounded-md border transition-colors ${
                   difficulty === d.id
-                    ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 shadow-sm'
+                    ? 'border-neutral-900 dark:border-white bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-semibold'
                     : 'border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-850'
                 }`}
               >
@@ -691,50 +692,50 @@ export const GenerateView: React.FC<GenerateViewProps> = ({ onDeckCreated, onCan
 
         {/* Format */}
         <div>
-          <label className="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-2">
+          <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
             Card Format
           </label>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-1.5">
             {[
-              { id: 'qa', label: 'Standard Q&A', desc: 'Direct active recall' },
-              { id: 'multiple_choice', label: 'Multiple Choice', desc: 'Scenario & choices' },
-              { id: 'fill_in_the_blank', label: 'Fill-in-Blank', desc: 'Cloze deletion terms' },
+              { id: 'qa', label: 'Direct Q&A', desc: 'Active recall questions' },
+              { id: 'multiple_choice', label: 'Multiple Choice', desc: 'Choices with reasoning' },
+              { id: 'fill_in_the_blank', label: 'Cloze Deletion', desc: 'Key missing terms' },
             ].map((f) => (
               <button
                 key={f.id}
                 type="button"
                 onClick={() => setFormat(f.id as GenerationFormat)}
-                className={`p-2.5 text-left rounded-lg border transition-all ${
+                className={`p-2 text-left rounded-md border transition-colors ${
                   format === f.id
-                    ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 shadow-sm'
+                    ? 'border-neutral-900 dark:border-white bg-neutral-900 dark:bg-white text-white dark:text-neutral-900'
                     : 'border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-850'
                 }`}
               >
-                <div className="text-xs font-bold">{f.label}</div>
-                <div className="text-[10px] text-neutral-500 dark:text-neutral-400 mt-0.5">{f.desc}</div>
+                <div className="text-xs font-semibold">{f.label}</div>
+                <div className="text-[10px] opacity-70 mt-0.5">{f.desc}</div>
               </button>
             ))}
           </div>
         </div>
 
-        {/* Focus Topic (optional) */}
+        {/* Focus Topic */}
         <div>
-          <label className="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">
-            Topic Focus / Custom Instructions (Optional)
+          <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+            Focus Topic / Emphasis (Optional)
           </label>
           <input
             type="text"
             value={focusTopic}
             onChange={(e) => setFocusTopic(e.target.value)}
-            placeholder="e.g. Focus heavily on enzymatic reaction rates and competitive inhibition"
-            className="w-full text-xs px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            placeholder="e.g. Focus on mechanism of action and clinical diagnostic criteria"
+            className="w-full text-xs px-3 py-1.5 rounded-md border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
           />
         </div>
       </div>
 
       {/* Error Message */}
       {error && (
-        <div className="mb-6 p-4 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 flex items-start gap-3 text-xs leading-relaxed">
+        <div className="mb-5 p-3 rounded-md border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 flex items-start gap-2.5 text-xs">
           <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
           <div className="flex-1">
             <span className="font-semibold">Notice:</span> {error}
@@ -743,51 +744,45 @@ export const GenerateView: React.FC<GenerateViewProps> = ({ onDeckCreated, onCan
       )}
 
       {/* Action Buttons */}
-      <div className="flex items-center justify-end gap-3">
+      <div className="flex items-center justify-end gap-2.5">
         <button
           onClick={onCancel}
           disabled={isGenerating}
-          className="px-4 py-2.5 text-sm font-medium rounded-xl text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+          className="px-3.5 py-1.5 text-xs font-medium rounded-md text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
         >
           Cancel
         </button>
         <button
           onClick={handleGenerate}
           disabled={isGenerating || (activeTab === 'upload' && !uploadedFile) || (activeTab === 'text' && !rawText.trim())}
-          className="px-6 py-2.5 text-sm font-semibold rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white shadow-md shadow-indigo-600/30 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group"
+          className="px-4 py-1.5 text-xs font-semibold rounded-md bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-colors flex items-center gap-1.5 disabled:opacity-50"
         >
-          <Sparkles className="w-4 h-4 group-hover:rotate-12 transition-transform duration-300" />
-          <span>Generate {count} Flashcards</span>
+          <span>Generate {count} Cards</span>
+          <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </div>
 
       {/* Loading Modal / Overlay */}
       {isGenerating && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl max-w-md w-full p-6 text-center shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-            <div className="relative w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-              <div className="absolute inset-0 rounded-2xl bg-indigo-500/20 animate-ping" />
-              <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 text-white flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                <Sparkles className="w-7 h-7 animate-spin" />
-              </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl max-w-sm w-full p-6 text-center shadow-xl animate-in fade-in zoom-in-95 duration-150">
+            <div className="w-10 h-10 rounded-lg bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 flex items-center justify-center mx-auto mb-3">
+              <BookOpen className="w-5 h-5" />
             </div>
 
-            <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-1">
-              Gemini is Analyzing Your Document
+            <h3 className="text-sm font-bold text-neutral-900 dark:text-white mb-1">
+              Synthesizing Flashcards
             </h3>
 
-            {/* Stepper message */}
-            <p className="text-sm font-medium text-indigo-600 dark:text-indigo-400 min-h-[44px] flex items-center justify-center px-4 mb-4">
+            <p className="text-xs font-medium text-neutral-600 dark:text-neutral-300 min-h-[36px] flex items-center justify-center px-2 mb-3">
               {LOADING_STEPS[loadingStepIdx]}
             </p>
 
-            {/* Shimmer progress line */}
-            <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-full h-1.5 overflow-hidden mb-6">
-              <div className="h-full bg-indigo-600 rounded-full w-2/3 animate-[pulse_1.5s_ease-in-out_infinite]" />
+            <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-full h-1 overflow-hidden mb-4">
+              <div className="h-full bg-neutral-900 dark:bg-neutral-100 rounded-full w-2/3 transition-all duration-300" />
             </div>
 
-            {/* Helpful study tip */}
-            <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200/60 dark:border-neutral-700/60 text-xs text-neutral-500 dark:text-neutral-400 italic">
+            <div className="p-2.5 rounded-md bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-[11px] text-neutral-500 dark:text-neutral-400">
               {STUDY_TIPS[tipIdx]}
             </div>
           </div>

@@ -181,14 +181,14 @@ export const QuizView: React.FC<QuizViewProps> = ({
   if (isLoading && questions.length === 0) {
     return (
       <div className="max-w-md mx-auto px-4 py-20 text-center">
-        <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto mb-4">
-          <Loader2 className="w-7 h-7 animate-spin" />
+        <div className="w-12 h-12 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-850 text-neutral-900 dark:text-white flex items-center justify-center mx-auto mb-3.5">
+          <Loader2 className="w-5 h-5 animate-spin" />
         </div>
-        <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-1">
+        <h3 className="text-base font-bold text-neutral-900 dark:text-white mb-1">
           Generating Multiple-Choice Quiz
         </h3>
         <p className="text-xs text-neutral-500 dark:text-neutral-400">
-          Gemini is synthesizing plausible distractors and challenging misconceptions...
+          Synthesizing calibrated distractors and concept checks...
         </p>
       </div>
     );
@@ -200,47 +200,47 @@ export const QuizView: React.FC<QuizViewProps> = ({
 
     return (
       <div className="max-w-md mx-auto px-4 py-12 text-center animate-in fade-in zoom-in-95 duration-200">
-        <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-indigo-600 to-violet-500 text-white flex items-center justify-center mx-auto mb-6 shadow-xl shadow-indigo-500/25">
-          <Award className="w-10 h-10" />
+        <div className="w-14 h-14 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 flex items-center justify-center mx-auto mb-5 shadow-sm">
+          <Award className="w-7 h-7" />
         </div>
 
-        <h2 className="text-3xl font-extrabold text-neutral-900 dark:text-white mb-2">
-          Quiz Completed!
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-neutral-900 dark:text-white tracking-tight mb-2">
+          Quiz Completed
         </h2>
-        <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-6">
+        <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mb-6">
           Deck: <span className="font-semibold text-neutral-800 dark:text-neutral-200">{deck.title}</span>
         </p>
 
         {/* Score Card */}
-        <div className="p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm mb-6">
-          <div className="text-4xl font-extrabold text-indigo-600 dark:text-indigo-400 mb-1">
+        <div className="p-5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs mb-6">
+          <div className="text-4xl font-extrabold font-mono text-indigo-600 dark:text-indigo-400 mb-1">
             {percentage}%
           </div>
-          <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
-            {score} correct out of {questions.length} questions
+          <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 font-mono">
+            {score} / {questions.length} correct
           </div>
 
           <div className="mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-800 text-xs text-neutral-600 dark:text-neutral-300">
             {percentage >= 90
-              ? 'Outstanding mastery! Your concepts are firmly consolidated.'
+              ? 'Outstanding mastery. Your concepts are firmly consolidated.'
               : percentage >= 70
-              ? 'Great job! A quick spaced repetition review will reinforce the remaining items.'
-              : 'Keep practicing! Reviewing with flip-cards will build up strong recall traces.'}
+              ? 'Good recall. A targeted review will reinforce the remaining items.'
+              : 'Keep practicing. Reviewing with flashcards will build up strong recall.'}
           </div>
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3 justify-center">
+        <div className="flex gap-2.5 justify-center">
           <button
             onClick={handleRestart}
-            className="px-5 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200 font-semibold text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-1.5"
+            className="px-4 py-2 rounded-md border border-neutral-300 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200 font-medium text-xs hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-1.5"
           >
-            <RotateCcw className="w-4 h-4" />
+            <RotateCcw className="w-3.5 h-3.5" />
             <span>Retake Quiz</span>
           </button>
           <button
             onClick={onBackToDashboard}
-            className="px-6 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-500 shadow-md shadow-indigo-600/25 transition-colors"
+            className="px-5 py-2 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-xs transition-colors"
           >
             Dashboard
           </button>
@@ -282,8 +282,8 @@ export const QuizView: React.FC<QuizViewProps> = ({
       </div>
 
       {/* Question Card */}
-      <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm mb-6">
-        <div className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-2">
+      <div className="p-6 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs mb-6">
+        <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-2">
           Question
         </div>
         <h2 className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-white leading-snug">
@@ -295,13 +295,13 @@ export const QuizView: React.FC<QuizViewProps> = ({
             {!showHint ? (
               <button
                 onClick={() => setShowHint(true)}
-                className="text-xs text-neutral-500 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center gap-1"
+                className="text-xs text-neutral-500 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center gap-1 font-medium"
               >
                 <HelpCircle className="w-3.5 h-3.5" />
-                <span>Show AI Hint</span>
+                <span>Show Diagnostic Hint</span>
               </button>
             ) : (
-              <div className="p-3 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/40 border border-indigo-200/60 dark:border-indigo-900/60 text-xs text-indigo-700 dark:text-indigo-300">
+              <div className="p-3 rounded-lg bg-indigo-50/60 dark:bg-indigo-950/40 border border-indigo-200/60 dark:border-indigo-900/60 text-xs text-indigo-700 dark:text-indigo-300">
                 <span className="font-semibold">Hint: </span>
                 {currentQ.hint}
               </div>
@@ -311,16 +311,16 @@ export const QuizView: React.FC<QuizViewProps> = ({
       </div>
 
       {/* Options */}
-      <div className="space-y-3 mb-6">
+      <div className="space-y-2.5 mb-6">
         {currentQ.options.map((option, idx) => {
           const letter = String.fromCharCode(65 + idx); // A, B, C, D
           let stateStyle = 'border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-700 text-neutral-800 dark:text-neutral-200';
 
           if (isAnswered) {
             if (idx === currentQ.correctIndex) {
-              stateStyle = 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-100 ring-2 ring-emerald-500/20';
+              stateStyle = 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-100 ring-1 ring-emerald-500/20';
             } else if (idx === selectedOption) {
-              stateStyle = 'border-rose-500 bg-rose-50 dark:bg-rose-950/40 text-rose-900 dark:text-rose-100 ring-2 ring-rose-500/20';
+              stateStyle = 'border-rose-500 bg-rose-50/50 dark:bg-rose-950/40 text-rose-900 dark:text-rose-100 ring-1 ring-rose-500/20';
             } else {
               stateStyle = 'opacity-40 border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900';
             }
@@ -331,10 +331,10 @@ export const QuizView: React.FC<QuizViewProps> = ({
               key={idx}
               onClick={() => handleSelectOption(idx)}
               disabled={isAnswered}
-              className={`w-full p-4 rounded-xl border text-left transition-all flex items-start gap-3.5 ${stateStyle}`}
+              className={`w-full p-3.5 rounded-lg border text-left transition-all flex items-start gap-3 ${stateStyle}`}
             >
               <div
-                className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 ${
+                className={`w-6 h-6 rounded-md font-mono flex items-center justify-center font-bold text-xs shrink-0 ${
                   isAnswered && idx === currentQ.correctIndex
                     ? 'bg-emerald-600 text-white'
                     : isAnswered && idx === selectedOption
@@ -345,15 +345,15 @@ export const QuizView: React.FC<QuizViewProps> = ({
                 {letter}
               </div>
 
-              <div className="flex-1 text-sm font-medium pt-0.5 leading-snug">
+              <div className="flex-1 text-xs sm:text-sm font-medium pt-0.5 leading-snug">
                 {option}
               </div>
 
               {isAnswered && idx === currentQ.correctIndex && (
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
               )}
               {isAnswered && idx === selectedOption && idx !== currentQ.correctIndex && (
-                <XCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+                <XCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
               )}
             </button>
           );
@@ -362,11 +362,11 @@ export const QuizView: React.FC<QuizViewProps> = ({
 
       {/* Explanation Banner & Next Button */}
       {isAnswered && (
-        <div className="p-4 rounded-xl bg-neutral-100/80 dark:bg-neutral-850 border border-neutral-200 dark:border-neutral-800 mb-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
+        <div className="p-4 rounded-lg bg-neutral-100/70 dark:bg-neutral-850 border border-neutral-200 dark:border-neutral-800 mb-6 animate-in fade-in slide-in-from-bottom-1 duration-150">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <div className="text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 mb-1">
-                {selectedOption === currentQ.correctIndex ? 'Correct!' : 'Incorrect'}
+              <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 mb-1">
+                {selectedOption === currentQ.correctIndex ? 'Correct' : 'Incorrect'}
               </div>
               <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-300 leading-relaxed">
                 {currentQ.explanation || `The correct answer is: ${currentQ.card.answer}`}
@@ -375,7 +375,7 @@ export const QuizView: React.FC<QuizViewProps> = ({
 
             <button
               onClick={handleNextQuestion}
-              className="px-5 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold text-xs hover:bg-indigo-500 shadow-md shadow-indigo-600/25 transition-colors shrink-0 flex items-center gap-1.5"
+              className="px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-xs transition-colors shrink-0 flex items-center gap-1.5"
             >
               <span>{currentIndex + 1 === questions.length ? 'Finish' : 'Next'}</span>
               <ArrowRight className="w-3.5 h-3.5" />

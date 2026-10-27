@@ -78,41 +78,41 @@ export const ManagerPanel: React.FC<ManagerPanelProps> = ({
   if (!isAuthorized) {
     return (
       <div className="max-w-xl mx-auto px-4 py-16 text-center animate-in fade-in zoom-in-95 duration-200">
-        <div className="w-20 h-20 rounded-3xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/60 flex items-center justify-center mx-auto mb-6 shadow-lg shadow-rose-500/10">
-          <ShieldAlert className="w-10 h-10" />
+        <div className="w-14 h-14 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/60 flex items-center justify-center mx-auto mb-5 shadow-xs">
+          <ShieldAlert className="w-7 h-7" />
         </div>
 
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-neutral-900 dark:text-white mb-2">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-neutral-900 dark:text-white tracking-tight mb-2">
           Access Restricted: Manager Panel
         </h1>
 
-        <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-6 leading-relaxed">
-          This administration console is strictly protected by attribute-based security rules and is exclusively authorized for:
+        <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mb-5 leading-relaxed">
+          This administration console is protected by attribute-based security rules and is exclusively authorized for:
         </p>
 
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-neutral-100 dark:bg-neutral-850 border border-neutral-200 dark:border-neutral-800 font-mono font-bold text-xs text-neutral-900 dark:text-neutral-100 mb-8 shadow-xs">
-          <Lock className="w-4 h-4 text-indigo-500" />
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-md bg-neutral-100 dark:bg-neutral-850 border border-neutral-200 dark:border-neutral-800 font-mono font-bold text-xs text-neutral-900 dark:text-neutral-100 mb-6 shadow-2xs">
+          <Lock className="w-3.5 h-3.5 text-indigo-500" />
           <span>{MANAGER_EMAIL}</span>
         </div>
 
         <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-8 max-w-md mx-auto">
           {currentUser ? (
-            <span>You are currently signed in as <strong className="text-neutral-700 dark:text-neutral-300">{currentUser.email}</strong>, which does not have administrative privileges.</span>
+            <span>You are currently signed in as <strong className="text-neutral-700 dark:text-neutral-300 font-mono">{currentUser.email}</strong>, which does not have administrative privileges.</span>
           ) : (
             <span>Please sign in with the authorized manager account to access platform metrics and administrative tools.</span>
           )}
         </div>
 
-        <div className="flex justify-center gap-3">
+        <div className="flex justify-center gap-2.5">
           <button
             onClick={onBackToDashboard}
-            className="px-5 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+            className="px-4 py-2 rounded-md border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
           >
             Return to Dashboard
           </button>
           <button
             onClick={onOpenAuthModal}
-            className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/25 transition-colors"
+            className="px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-xs transition-colors"
           >
             Sign In as Manager
           </button>
@@ -171,33 +171,33 @@ export const ManagerPanel: React.FC<ManagerPanelProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-neutral-200 dark:border-neutral-800">
         <div>
           <div className="flex items-center gap-2 mb-1.5">
-            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-800 flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Restricted Manager Console</span>
+            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-800 flex items-center gap-1">
+              <ShieldCheck className="w-3 h-3" />
+              <span>Manager Console</span>
             </span>
             <span className="text-xs text-neutral-400 font-mono">
               Role: Master Administrator
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-neutral-900 dark:text-white tracking-tight">
-            FlashGen Platform Oversight
+            Platform Oversight
           </h1>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Authorized Account: <strong className="text-neutral-800 dark:text-neutral-200">{manager.email}</strong>
+            Authorized Account: <strong className="text-neutral-800 dark:text-neutral-200 font-mono">{manager.email}</strong>
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={exportAuditLog}
-            className="px-3.5 py-2 text-xs font-semibold rounded-xl border border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-1.5 shadow-2xs"
+            className="px-3 py-1.5 text-xs font-semibold rounded-md border border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-1.5 shadow-2xs"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Export Audit Log</span>
           </button>
           <button
             onClick={onBackToDashboard}
-            className="px-4 py-2 text-xs font-bold rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-colors flex items-center gap-1.5 shadow-sm"
+            className="px-3.5 py-1.5 text-xs font-semibold rounded-md bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-colors flex items-center gap-1.5 shadow-xs"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Learner View</span>
@@ -206,7 +206,7 @@ export const ManagerPanel: React.FC<ManagerPanelProps> = ({
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 border-b border-neutral-200 dark:border-neutral-800 pb-3 mb-6 overflow-x-auto scrollbar-none">
+      <div className="flex gap-1.5 border-b border-neutral-200 dark:border-neutral-800 pb-3 mb-6 overflow-x-auto scrollbar-none">
         {[
           { id: 'overview', label: 'Platform Overview', icon: Activity },
           { id: 'users', label: 'Users Directory', icon: Users, count: registeredUsers.length },
@@ -219,16 +219,16 @@ export const ManagerPanel: React.FC<ManagerPanelProps> = ({
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 shrink-0 ${
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 shrink-0 ${
                 isActive
-                  ? 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 shadow-xs'
-                  : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                  ? 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 shadow-2xs'
+                  : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-850'
               }`}
             >
               <Icon className="w-3.5 h-3.5" />
               <span>{tab.label}</span>
               {typeof tab.count === 'number' && (
-                <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+                <span className={`px-1.5 py-0.2 rounded font-mono text-[10px] ${
                   isActive ? 'bg-neutral-700 text-white dark:bg-neutral-300 dark:text-neutral-900' : 'bg-neutral-200 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
                 }`}>
                   {tab.count}
@@ -243,13 +243,13 @@ export const ManagerPanel: React.FC<ManagerPanelProps> = ({
       {activeTab === 'overview' && (
         <div className="space-y-6">
           {/* Metrics Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs">
               <div className="flex items-center justify-between text-neutral-400 mb-2">
-                <span className="text-xs font-semibold uppercase tracking-wider">Total Decks</span>
-                <Layers className="w-4 h-4 text-indigo-500" />
+                <span className="text-[10px] font-mono font-semibold uppercase tracking-wider">Total Decks</span>
+                <Layers className="w-3.5 h-3.5 text-indigo-500" />
               </div>
-              <div className="text-3xl font-extrabold text-neutral-900 dark:text-white">
+              <div className="text-2xl font-extrabold font-mono text-neutral-900 dark:text-white">
                 {decks.length}
               </div>
               <div className="text-[11px] text-neutral-400 mt-1">
@@ -257,25 +257,25 @@ export const ManagerPanel: React.FC<ManagerPanelProps> = ({
               </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs">
+            <div className="p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs">
               <div className="flex items-center justify-between text-neutral-400 mb-2">
-                <span className="text-xs font-semibold uppercase tracking-wider">Total Flashcards</span>
-                <Sparkles className="w-4 h-4 text-violet-500" />
+                <span className="text-[10px] font-mono font-semibold uppercase tracking-wider">Flashcards</span>
+                <Sparkles className="w-3.5 h-3.5 text-violet-500" />
               </div>
-              <div className="text-3xl font-extrabold text-neutral-900 dark:text-white">
+              <div className="text-2xl font-extrabold font-mono text-neutral-900 dark:text-white">
                 {totalCards}
               </div>
               <div className="text-[11px] text-neutral-400 mt-1">
-                Generated via Gemini multimodal
+                Synthesized cards
               </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs">
+            <div className="p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs">
               <div className="flex items-center justify-between text-neutral-400 mb-2">
-                <span className="text-xs font-semibold uppercase tracking-wider">Registered Accounts</span>
-                <Users className="w-4 h-4 text-emerald-500" />
+                <span className="text-[10px] font-mono font-semibold uppercase tracking-wider">Registered Accounts</span>
+                <Users className="w-3.5 h-3.5 text-emerald-500" />
               </div>
-              <div className="text-3xl font-extrabold text-neutral-900 dark:text-white">
+              <div className="text-2xl font-extrabold font-mono text-neutral-900 dark:text-white">
                 {Math.max(1, registeredUsers.length)}
               </div>
               <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium mt-1">
@@ -283,60 +283,60 @@ export const ManagerPanel: React.FC<ManagerPanelProps> = ({
               </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs">
+            <div className="p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs">
               <div className="flex items-center justify-between text-neutral-400 mb-2">
-                <span className="text-xs font-semibold uppercase tracking-wider">Card Reviews</span>
-                <Activity className="w-4 h-4 text-amber-500" />
+                <span className="text-[10px] font-mono font-semibold uppercase tracking-wider">Card Reviews</span>
+                <Activity className="w-3.5 h-3.5 text-amber-500" />
               </div>
-              <div className="text-3xl font-extrabold text-neutral-900 dark:text-white">
+              <div className="text-2xl font-extrabold font-mono text-neutral-900 dark:text-white">
                 {stats.totalReviewsCompleted}
               </div>
               <div className="text-[11px] text-amber-600 dark:text-amber-400 font-medium mt-1">
-                SM-2 spaced repetitions logged
+                SM-2 spaced repetitions
               </div>
             </div>
           </div>
 
           {/* Infrastructure Health & Live Subsystems */}
-          <div className="p-6 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs">
-            <h3 className="text-sm font-bold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
-              <Cpu className="w-4 h-4 text-indigo-500" />
-              <span>Platform Subsystems & Live Infrastructure Status</span>
+          <div className="p-5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs">
+            <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-3.5 flex items-center gap-2">
+              <Cpu className="w-3.5 h-3.5 text-indigo-500" />
+              <span>Platform Subsystems & Live Infrastructure</span>
             </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-850 border border-neutral-200/80 dark:border-neutral-800 flex items-start gap-3">
-                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 mt-1 shrink-0 animate-pulse" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+              <div className="p-3 rounded-lg bg-neutral-50 dark:bg-neutral-850 border border-neutral-200/80 dark:border-neutral-800 flex items-start gap-2.5">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
                 <div>
                   <div className="text-xs font-bold text-neutral-900 dark:text-white">
-                    Gemini 3.8 Flash Multimodal API
+                    Gemini 3.8 Flash Multimodal
                   </div>
                   <div className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-                    Server proxy with automatic exponential retry
+                    Server proxy with automatic backoff retry
                   </div>
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-850 border border-neutral-200/80 dark:border-neutral-800 flex items-start gap-3">
-                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 mt-1 shrink-0 animate-pulse" />
+              <div className="p-3 rounded-lg bg-neutral-50 dark:bg-neutral-850 border border-neutral-200/80 dark:border-neutral-800 flex items-start gap-2.5">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
                 <div>
                   <div className="text-xs font-bold text-neutral-900 dark:text-white">
                     Google Cloud Firestore
                   </div>
                   <div className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-                    ABAC rules deployed & active
+                    Attribute-based access rules active
                   </div>
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-850 border border-neutral-200/80 dark:border-neutral-800 flex items-start gap-3">
-                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 mt-1 shrink-0 animate-pulse" />
+              <div className="p-3 rounded-lg bg-neutral-50 dark:bg-neutral-850 border border-neutral-200/80 dark:border-neutral-800 flex items-start gap-2.5">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
                 <div>
                   <div className="text-xs font-bold text-neutral-900 dark:text-white">
                     Firebase Authentication
                   </div>
                   <div className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-                    Locked role gate: m4len1as@gmail.com
+                    Protected manager gate: m4len1as@gmail.com
                   </div>
                 </div>
               </div>
@@ -348,50 +348,50 @@ export const ManagerPanel: React.FC<ManagerPanelProps> = ({
       {/* ================= TAB: USERS ================= */}
       {activeTab === 'users' && (
         <div className="space-y-4">
-          <div className="p-6 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs">
-            <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800 mb-4">
-              <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+          <div className="p-5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs">
+            <div className="flex items-center justify-between pb-3.5 border-b border-neutral-100 dark:border-neutral-800 mb-4">
+              <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-900 dark:text-white">
                 Registered Learner Accounts ({Math.max(1, registeredUsers.length)})
               </h3>
-              <span className="text-xs text-neutral-400">
-                Managed in Firestore <code className="font-mono text-[10px] bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">/users</code>
+              <span className="text-[11px] font-mono text-neutral-400">
+                Firestore <code className="bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded">/users</code>
               </span>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-neutral-200 dark:border-neutral-800 text-neutral-400 font-bold uppercase tracking-wider text-[10px]">
+                  <tr className="border-b border-neutral-200 dark:border-neutral-800 text-neutral-400 font-bold uppercase tracking-wider text-[10px] font-mono">
                     <th className="pb-3">User</th>
                     <th className="pb-3">Email</th>
                     <th className="pb-3">Role</th>
                     <th className="pb-3">UID</th>
-                    <th className="pb-3">Created</th>
+                    <th className="pb-3">Registered</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/60">
+                <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/60 font-mono text-xs">
                   {/* Current manager */}
                   <tr className="bg-amber-50/30 dark:bg-amber-950/20 font-medium">
                     <td className="py-3 flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-full bg-amber-500 text-white font-bold flex items-center justify-center text-xs">
+                      <div className="w-6 h-6 rounded-md bg-amber-500 text-white font-bold flex items-center justify-center text-xs">
                         M
                       </div>
-                      <span className="font-bold text-neutral-900 dark:text-white">
+                      <span className="font-bold text-neutral-900 dark:text-white font-sans">
                         {manager.displayName || 'Master Manager'}
                       </span>
                     </td>
-                    <td className="py-3 font-mono font-semibold text-indigo-600 dark:text-indigo-400">
+                    <td className="py-3 text-indigo-600 dark:text-indigo-400">
                       {manager.email}
                     </td>
                     <td className="py-3">
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
                         Manager
                       </span>
                     </td>
-                    <td className="py-3 font-mono text-[11px] text-neutral-400 truncate max-w-[120px]">
+                    <td className="py-3 text-[11px] text-neutral-400 truncate max-w-[120px]">
                       {manager.uid}
                     </td>
-                    <td className="py-3 text-neutral-400">
+                    <td className="py-3 text-neutral-400 font-sans text-xs">
                       Today
                     </td>
                   </tr>
@@ -401,21 +401,21 @@ export const ManagerPanel: React.FC<ManagerPanelProps> = ({
                     .filter((u) => u.email !== manager.email)
                     .map((user, idx) => (
                       <tr key={idx} className="hover:bg-neutral-50 dark:hover:bg-neutral-850 transition-colors">
-                        <td className="py-3 font-medium text-neutral-800 dark:text-neutral-200">
+                        <td className="py-3 font-medium text-neutral-800 dark:text-neutral-200 font-sans">
                           {user.displayName || 'Learner'}
                         </td>
-                        <td className="py-3 font-mono text-neutral-600 dark:text-neutral-400">
+                        <td className="py-3 text-neutral-600 dark:text-neutral-400">
                           {user.email}
                         </td>
                         <td className="py-3">
-                          <span className="px-2 py-0.5 rounded-full text-[10px] bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
+                          <span className="px-2 py-0.5 rounded-md text-[10px] bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
                             {user.role || 'user'}
                           </span>
                         </td>
-                        <td className="py-3 font-mono text-[11px] text-neutral-400 truncate max-w-[120px]">
+                        <td className="py-3 text-[11px] text-neutral-400 truncate max-w-[120px]">
                           {user.uid}
                         </td>
-                        <td className="py-3 text-neutral-400">
+                        <td className="py-3 text-neutral-400 font-sans text-xs">
                           {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Active'}
                         </td>
                       </tr>
@@ -430,23 +430,23 @@ export const ManagerPanel: React.FC<ManagerPanelProps> = ({
       {/* ================= TAB: DECKS DIRECTORY ================= */}
       {activeTab === 'decks' && (
         <div className="space-y-4">
-          <div className="p-6 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs">
-            <h3 className="text-sm font-bold text-neutral-900 dark:text-white mb-4">
+          <div className="p-5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs">
+            <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-900 dark:text-white mb-4">
               All Study Decks Across Platform ({decks.length})
             </h3>
 
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {decks.map((deck) => (
                 <div
                   key={deck.id}
-                  className="p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-850/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
+                  className="p-3.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-850/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
                 >
                   <div>
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-0.5">
                       <span className="text-sm font-bold text-neutral-900 dark:text-white">
                         {deck.title}
                       </span>
-                      <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400">
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400">
                         {deck.cards.length} cards
                       </span>
                     </div>
@@ -459,7 +459,7 @@ export const ManagerPanel: React.FC<ManagerPanelProps> = ({
                     {(deck.tags || []).map((t, i) => (
                       <span
                         key={i}
-                        className="text-[10px] px-2 py-0.5 rounded-full bg-neutral-200 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
+                        className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-neutral-200 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
                       >
                         {t}
                       </span>
@@ -477,7 +477,7 @@ export const ManagerPanel: React.FC<ManagerPanelProps> = ({
         <div className="max-w-2xl space-y-6">
           <form
             onSubmit={handleSaveAnnouncement}
-            className="p-6 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs space-y-4"
+            className="p-5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-4"
           >
             <div>
               <div className="flex items-center gap-2 font-bold text-sm text-neutral-900 dark:text-white mb-1">
@@ -485,30 +485,30 @@ export const ManagerPanel: React.FC<ManagerPanelProps> = ({
                 <span>Global Platform Announcement Banner</span>
               </div>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3">
-                Broadcast a notification or study update banner displayed to all learners at the top of their dashboard.
+                Broadcast a study update or system notification displayed across user dashboards.
               </p>
               <textarea
                 rows={3}
                 placeholder="e.g. Midterm season update: New diagnostic topic exams are now active! Spaced repetition intervals have been recalibrated."
                 value={announcementText}
                 onChange={(e) => setAnnouncementText(e.target.value)}
-                className="w-full text-xs p-3 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="w-full text-xs p-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-neutral-900 dark:focus:ring-white"
               />
             </div>
 
             <div className="flex items-center justify-between">
               {announcementSaved ? (
                 <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Announcement published!</span>
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>Announcement published</span>
                 </span>
               ) : (
-                <span className="text-[11px] text-neutral-400">Leave blank to hide banner</span>
+                <span className="text-[11px] font-mono text-neutral-400">Leave blank to hide banner</span>
               )}
 
               <button
                 type="submit"
-                className="px-5 py-2 rounded-xl bg-indigo-600 text-white font-bold text-xs hover:bg-indigo-500 shadow-sm transition-colors"
+                className="px-4 py-2 rounded-md bg-indigo-600 text-white font-semibold text-xs hover:bg-indigo-500 shadow-xs transition-colors"
               >
                 Publish Announcement
               </button>
@@ -516,12 +516,12 @@ export const ManagerPanel: React.FC<ManagerPanelProps> = ({
           </form>
 
           {/* Security Rules Verification Summary */}
-          <div className="p-6 rounded-3xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
+          <div className="p-5 rounded-xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
+            <h4 className="text-[10px] font-mono font-bold uppercase tracking-wider text-neutral-500 mb-2">
               Hardened Access Control Summary
             </h4>
             <ul className="text-xs space-y-1.5 text-neutral-600 dark:text-neutral-400 list-disc list-inside">
-              <li>Manager Role Lock: Bound to verified token matching <strong className="text-neutral-800 dark:text-neutral-200">{MANAGER_EMAIL}</strong></li>
+              <li>Manager Role Lock: Bound to verified token matching <strong className="text-neutral-800 dark:text-neutral-200 font-mono">{MANAGER_EMAIL}</strong></li>
               <li>ABAC Gatekeeper: Self-assigned admin elevation is blocked at the Firestore security rule level</li>
               <li>Zero-Trust Updates: Updates to other users' decks and test data return PERMISSION_DENIED</li>
             </ul>

@@ -359,18 +359,18 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
         </div>
 
         {/* Diagnostic Score Card Banner */}
-        <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm mb-8">
+        <div className="p-6 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs mb-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pb-6 border-b border-neutral-100 dark:border-neutral-800">
             <div>
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/60 mb-2">
-                <Award className="w-3.5 h-3.5" />
+              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/60 mb-2">
+                <Award className="w-3 h-3" />
                 <span>Diagnostic Assessment Report</span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-neutral-900 dark:text-white tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">
                 {testResult.testTitle}
               </h1>
-              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-                Topic: <span className="font-semibold text-neutral-700 dark:text-neutral-300">{testResult.topic}</span> • Time Taken: {formatTime(testResult.timeSpentSeconds)}
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                Topic: <span className="font-semibold text-neutral-700 dark:text-neutral-300">{testResult.topic}</span> • Duration: {formatTime(testResult.timeSpentSeconds)}
               </p>
             </div>
 
@@ -378,22 +378,22 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
             <div className="flex items-center gap-4">
               <div className="text-right">
                 <div
-                  className={`text-4xl font-extrabold tracking-tight ${
+                  className={`text-3xl font-extrabold font-mono tracking-tight ${
                     passed ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
                   }`}
                 >
                   {testResult.percentage}%
                 </div>
-                <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                <div className="text-xs font-semibold font-mono text-neutral-500 dark:text-neutral-400">
                   {testResult.score} / {testResult.totalQuestions} Correct
                 </div>
               </div>
 
               <div
-                className={`px-3 py-1.5 rounded-xl font-bold text-xs uppercase tracking-wider ${
+                className={`px-2.5 py-1 rounded-md font-mono font-bold text-[10px] uppercase tracking-wider ${
                   passed
-                    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300'
-                    : 'bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300'
+                    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300/60 dark:border-emerald-800/60'
+                    : 'bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-300/60 dark:border-rose-800/60'
                 }`}
               >
                 {passed ? 'Passed' : 'Needs Review'}
@@ -403,23 +403,23 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
 
           {/* Subtopic Mastery Breakdown Bars */}
           <div className="pt-6">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-3 flex items-center gap-1.5">
-              <BarChart3 className="w-4 h-4 text-indigo-500" />
+            <h3 className="text-[10px] font-mono font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-3 flex items-center gap-1.5">
+              <BarChart3 className="w-3.5 h-3.5 text-indigo-500" />
               <span>Subtopic Knowledge Diagnostic</span>
             </h3>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {testResult.subtopicBreakdown.map((sub, i) => (
                 <div
                   key={i}
-                  className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-850 border border-neutral-100 dark:border-neutral-800"
+                  className="p-3 rounded-lg bg-neutral-50 dark:bg-neutral-850 border border-neutral-100 dark:border-neutral-800"
                 >
-                  <div className="flex justify-between items-center text-xs font-semibold mb-1.5">
+                  <div className="flex justify-between items-center text-xs font-medium mb-1.5">
                     <span className="text-neutral-800 dark:text-neutral-200 truncate pr-2">
                       {sub.subtopic}
                     </span>
                     <span
-                      className={`font-bold ${
+                      className={`font-mono text-xs font-bold ${
                         sub.percentage >= 70
                           ? 'text-emerald-600 dark:text-emerald-400'
                           : sub.percentage >= 40
@@ -450,32 +450,32 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
 
         {/* Action Card: Generate Targeted Flashcards from Missed Questions */}
         {testResult.missedQuestions.length > 0 && activeTest.deckId && (
-          <div className="p-5 rounded-2xl bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-950/40 dark:to-violet-950/40 border border-indigo-200/80 dark:border-indigo-900/60 shadow-xs mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-850 border border-neutral-200 dark:border-neutral-800 shadow-xs mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300 font-bold text-xs uppercase tracking-wider mb-1">
-                <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+              <div className="flex items-center gap-1.5 text-indigo-700 dark:text-indigo-300 font-mono font-bold text-[10px] uppercase tracking-wider mb-1">
+                <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
                 <span>Reinforce Weak Areas</span>
               </div>
               <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
                 Turn your {testResult.missedQuestions.length} missed {testResult.missedQuestions.length === 1 ? 'question' : 'questions'} into active-recall flashcards
               </h3>
-              <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-0.5">
-                Gemini will generate targeted correction flashcards and automatically add them to your deck.
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                Generate targeted correction flashcards to reinforce these exact concepts.
               </p>
             </div>
 
             {generatedFlashcardsSuccess ? (
-              <span className="px-4 py-2 rounded-xl bg-emerald-600 text-white font-semibold text-xs flex items-center gap-1.5 shrink-0 shadow-sm">
-                <Check className="w-4 h-4" />
-                <span>Cards Added to Deck!</span>
+              <span className="px-3.5 py-1.5 rounded-md bg-emerald-600 text-white font-semibold text-xs flex items-center gap-1.5 shrink-0 shadow-xs">
+                <Check className="w-3.5 h-3.5" />
+                <span>Cards Added to Deck</span>
               </span>
             ) : (
               <button
                 onClick={handleGenerateMissedFlashcards}
                 disabled={isGeneratingFlashcards}
-                className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-md shadow-indigo-600/25 transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50"
+                className="px-3.5 py-2 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-xs transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50"
               >
-                <PlusCircle className={`w-4 h-4 ${isGeneratingFlashcards ? 'animate-spin' : ''}`} />
+                <PlusCircle className={`w-3.5 h-3.5 ${isGeneratingFlashcards ? 'animate-spin' : ''}`} />
                 <span>{isGeneratingFlashcards ? 'Generating Cards...' : 'Create Corrective Cards'}</span>
               </button>
             )}
@@ -484,16 +484,16 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
 
         {/* Review Questions Filter */}
         <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-3 mb-6">
-          <h2 className="text-base font-bold text-neutral-900 dark:text-white">
+          <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
             Question-by-Question Review
           </h2>
 
-          <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 p-1 rounded-xl">
+          <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 p-0.5 rounded-md">
             <button
               onClick={() => setReviewFilter('all')}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+              className={`px-2.5 py-1 rounded text-xs font-semibold transition-all ${
                 reviewFilter === 'all'
-                  ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-xs'
+                  ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-2xs'
                   : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
               }`}
             >
@@ -501,9 +501,9 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
             </button>
             <button
               onClick={() => setReviewFilter('missed')}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+              className={`px-2.5 py-1 rounded text-xs font-semibold transition-all ${
                 reviewFilter === 'missed'
-                  ? 'bg-white dark:bg-neutral-900 text-rose-600 dark:text-rose-400 shadow-xs'
+                  ? 'bg-white dark:bg-neutral-900 text-rose-600 dark:text-rose-400 shadow-2xs'
                   : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
               }`}
             >
@@ -511,9 +511,9 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
             </button>
             <button
               onClick={() => setReviewFilter('flagged')}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+              className={`px-2.5 py-1 rounded text-xs font-semibold transition-all ${
                 reviewFilter === 'flagged'
-                  ? 'bg-white dark:bg-neutral-900 text-amber-600 dark:text-amber-400 shadow-xs'
+                  ? 'bg-white dark:bg-neutral-900 text-amber-600 dark:text-amber-400 shadow-2xs'
                   : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
               }`}
             >
@@ -523,7 +523,7 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
         </div>
 
         {/* Questions Detailed List */}
-        <div className="space-y-4">
+        <div className="space-y-3.5">
           {filteredReviewQuestions.map((q, idx) => {
             const userChoice = testResult.userAnswers[q.id];
             const isCorrect = userChoice === q.correctIndex;
@@ -532,7 +532,7 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
             return (
               <div
                 key={q.id}
-                className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs"
+                className="p-5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs"
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
@@ -540,7 +540,7 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
                       Q{originalIndex + 1}
                     </span>
                     <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 ${
+                      className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-md flex items-center gap-1 ${
                         isCorrect
                           ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300'
                           : 'bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300'
@@ -550,25 +550,25 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
                       <span>{isCorrect ? 'Correct' : 'Incorrect'}</span>
                     </span>
 
-                    <span className="text-[10px] bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] font-mono bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 px-2 py-0.5 rounded-md">
                       {q.subtopic}
                     </span>
                   </div>
 
                   {testResult.flaggedQuestions.includes(q.id) && (
-                    <span className="text-[10px] text-amber-600 dark:text-amber-400 flex items-center gap-1 font-semibold">
+                    <span className="text-[10px] font-mono text-amber-600 dark:text-amber-400 flex items-center gap-1 font-semibold">
                       <Flag className="w-3 h-3 fill-amber-500" />
                       <span>Flagged</span>
                     </span>
                   )}
                 </div>
 
-                <h3 className="text-sm sm:text-base font-bold text-neutral-900 dark:text-white leading-snug mb-4">
+                <h3 className="text-sm sm:text-base font-bold text-neutral-900 dark:text-white leading-snug mb-3.5">
                   {q.question}
                 </h3>
 
                 {/* Choices review */}
-                <div className="space-y-2 mb-4">
+                <div className="space-y-2 mb-3.5">
                   {q.options.map((opt, optIdx) => {
                     const letter = String.fromCharCode(65 + optIdx);
                     const isUserChoice = userChoice === optIdx;
@@ -576,18 +576,18 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
 
                     let rowStyle = 'border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300';
                     if (isRightAnswer) {
-                      rowStyle = 'border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-100 font-semibold ring-1 ring-emerald-500/20';
+                      rowStyle = 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-100 font-semibold ring-1 ring-emerald-500/20';
                     } else if (isUserChoice) {
-                      rowStyle = 'border-rose-500 bg-rose-50/60 dark:bg-rose-950/40 text-rose-900 dark:text-rose-100 font-semibold ring-1 ring-rose-500/20';
+                      rowStyle = 'border-rose-500 bg-rose-50/50 dark:bg-rose-950/40 text-rose-900 dark:text-rose-100 font-semibold ring-1 ring-rose-500/20';
                     }
 
                     return (
                       <div
                         key={optIdx}
-                        className={`p-3 rounded-xl border text-xs sm:text-sm flex items-center gap-3 ${rowStyle}`}
+                        className={`p-3 rounded-lg border text-xs sm:text-sm flex items-center gap-3 ${rowStyle}`}
                       >
                         <span
-                          className={`w-6 h-6 rounded-md flex items-center justify-center font-bold text-xs shrink-0 ${
+                          className={`w-6 h-6 rounded-md font-mono flex items-center justify-center font-bold text-xs shrink-0 ${
                             isRightAnswer
                               ? 'bg-emerald-600 text-white'
                               : isUserChoice
@@ -599,12 +599,12 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
                         </span>
                         <span className="flex-1 leading-snug">{opt}</span>
                         {isRightAnswer && (
-                          <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
+                          <span className="text-[11px] font-mono font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
                             Correct Answer
                           </span>
                         )}
                         {isUserChoice && !isRightAnswer && (
-                          <span className="text-[11px] font-bold text-rose-600 dark:text-rose-400 shrink-0">
+                          <span className="text-[11px] font-mono font-bold text-rose-600 dark:text-rose-400 shrink-0">
                             Your Choice
                           </span>
                         )}
@@ -615,7 +615,7 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
 
                 {/* Explanation */}
                 {q.explanation && (
-                  <div className="p-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-850 border border-neutral-100 dark:border-neutral-800 text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
+                  <div className="p-3 rounded-lg bg-neutral-50 dark:bg-neutral-850 border border-neutral-100 dark:border-neutral-800 text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
                     <span className="font-bold text-neutral-900 dark:text-neutral-100">Rationale: </span>
                     {q.explanation}
                   </div>
@@ -626,19 +626,19 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
         </div>
 
         {/* Bottom Actions */}
-        <div className="flex justify-center gap-3 mt-8">
+        <div className="flex justify-center gap-2.5 mt-8">
           <button
             onClick={() => {
               setActiveTest(null);
               setTestResult(null);
             }}
-            className="px-5 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+            className="px-4 py-2 rounded-md border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
           >
             Done Reviewing
           </button>
           <button
             onClick={handleStartTest}
-            className="px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-500 shadow-md shadow-indigo-600/25 transition-colors flex items-center gap-1.5"
+            className="px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-xs transition-colors flex items-center gap-1.5"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Retake This Test</span>
@@ -662,32 +662,32 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
     return (
       <div className="max-w-4xl mx-auto px-4 py-6">
         {/* Top Exam Header with Timer & Nav */}
-        <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3 w-full sm:w-auto">
-            <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xs shrink-0">
-              <FileText className="w-5 h-5" />
+            <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white flex items-center justify-center font-bold text-xs shrink-0">
+              <FileText className="w-4 h-4" />
             </div>
             <div className="truncate">
               <h2 className="text-sm font-bold text-neutral-900 dark:text-white truncate">
                 {activeTest.testTitle}
               </h2>
-              <div className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                {answeredCount} of {totalQ} Answered • {flaggedQuestions.size} Flagged
+              <div className="text-[11px] font-mono text-neutral-500 dark:text-neutral-400">
+                {answeredCount} / {totalQ} Answered • {flaggedQuestions.size} Flagged
               </div>
             </div>
           </div>
 
-          <div className="flex items-center justify-between w-full sm:w-auto gap-3">
+          <div className="flex items-center justify-between w-full sm:w-auto gap-2.5">
             {/* Countdown timer */}
             {testMode === 'timed' && (
               <div
-                className={`px-3 py-1.5 rounded-xl font-mono text-sm font-bold flex items-center gap-1.5 border ${
+                className={`px-2.5 py-1.5 rounded-md font-mono text-xs font-bold flex items-center gap-1.5 border ${
                   timeRemaining <= 120
-                    ? 'bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-950/80 dark:border-rose-900 animate-pulse'
+                    ? 'bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-950/80 dark:border-rose-900'
                     : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border-neutral-200 dark:border-neutral-700'
                 }`}
               >
-                <Timer className="w-4 h-4" />
+                <Timer className="w-3.5 h-3.5" />
                 <span>{formatTime(timeRemaining)}</span>
               </div>
             )}
@@ -695,7 +695,7 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
             {/* Flag button */}
             <button
               onClick={handleToggleFlag}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold border transition-all flex items-center gap-1.5 ${
                 isCurrentFlagged
                   ? 'bg-amber-50 dark:bg-amber-950/80 border-amber-300 dark:border-amber-800 text-amber-700 dark:text-amber-300'
                   : 'border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800'
@@ -708,7 +708,7 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
             {/* Submit button */}
             <button
               onClick={() => setShowSubmitConfirm(true)}
-              className="px-4 py-1.5 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-bold hover:bg-neutral-800 dark:hover:bg-neutral-100 shadow-sm transition-colors"
+              className="px-3.5 py-1.5 rounded-md bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-bold hover:bg-neutral-800 dark:hover:bg-neutral-100 shadow-xs transition-colors"
             >
               Submit Exam
             </button>
@@ -716,7 +716,7 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
         </div>
 
         {/* Question Palette Strip */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-3 mb-6 scrollbar-none">
+        <div className="flex items-center gap-1 overflow-x-auto pb-3 mb-6 scrollbar-none">
           {activeTest.questions.map((q, idx) => {
             const isAnswered = typeof userAnswers[q.id] === 'number';
             const isFlagged = flaggedQuestions.has(q.id);
@@ -726,9 +726,9 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
               <button
                 key={q.id}
                 onClick={() => setCurrentQuestionIndex(idx)}
-                className={`relative w-8 h-8 rounded-lg text-xs font-bold transition-all shrink-0 flex items-center justify-center ${
+                className={`relative w-7 h-7 rounded-md font-mono text-xs font-bold transition-all shrink-0 flex items-center justify-center ${
                   isCurrent
-                    ? 'ring-2 ring-indigo-500 ring-offset-2 dark:ring-offset-neutral-950 font-black'
+                    ? 'ring-2 ring-indigo-500 ring-offset-1 dark:ring-offset-neutral-950 font-black'
                     : ''
                 } ${
                   isAnswered
@@ -738,7 +738,7 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
               >
                 {idx + 1}
                 {isFlagged && (
-                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-500 rounded-full border-2 border-white dark:border-neutral-900" />
+                  <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-amber-500 rounded-full border border-white dark:border-neutral-900" />
                 )}
               </button>
             );
@@ -746,12 +746,12 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
         </div>
 
         {/* Active Question Box */}
-        <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm mb-6">
+        <div className="p-6 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs mb-6">
           <div className="flex items-center justify-between text-xs text-neutral-400 mb-2">
-            <span className="font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
+            <span className="font-mono text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
               Question {currentQuestionIndex + 1} of {totalQ}
             </span>
-            <span className="bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded text-[11px] text-neutral-500">
+            <span className="bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded font-mono text-[10px] text-neutral-500">
               {currentQ.subtopic}
             </span>
           </div>
@@ -761,7 +761,7 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
           </h2>
 
           {/* Options */}
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {currentQ.options.map((option, optIdx) => {
               const letter = String.fromCharCode(65 + optIdx);
               const isSelected = selectedOption === optIdx;
@@ -771,7 +771,7 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
                 <div
                   key={optIdx}
                   onClick={() => !isEliminated && handleSelectAnswer(optIdx)}
-                  className={`group p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                  className={`group p-3.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between gap-3 ${
                     isSelected
                       ? 'border-indigo-600 bg-indigo-50/60 dark:bg-indigo-950/40 ring-1 ring-indigo-500/20'
                       : isEliminated
@@ -779,9 +779,9 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
                       : 'border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-700'
                   }`}
                 >
-                  <div className="flex items-center gap-3.5 flex-1">
+                  <div className="flex items-center gap-3 flex-1">
                     <span
-                      className={`w-7 h-7 rounded-lg font-bold text-xs flex items-center justify-center shrink-0 ${
+                      className={`w-6 h-6 rounded-md font-mono font-bold text-xs flex items-center justify-center shrink-0 ${
                         isSelected
                           ? 'bg-indigo-600 text-white'
                           : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
@@ -790,7 +790,7 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
                       {letter}
                     </span>
                     <span
-                      className={`text-sm font-medium leading-snug ${
+                      className={`text-xs sm:text-sm font-medium leading-snug ${
                         isEliminated ? 'line-through text-neutral-400' : 'text-neutral-800 dark:text-neutral-200'
                       }`}
                     >
@@ -802,7 +802,7 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
                   <button
                     type="button"
                     onClick={(e) => handleToggleEliminate(e, optIdx)}
-                    className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                    className="p-1 rounded-md text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                     title={isEliminated ? 'Un-strike option' : 'Strike out option'}
                   >
                     <EyeOff className="w-3.5 h-3.5" />
@@ -818,20 +818,20 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
           <button
             onClick={() => setCurrentQuestionIndex((prev) => Math.max(0, prev - 1))}
             disabled={currentQuestionIndex === 0}
-            className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 text-xs font-semibold text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
+            className="px-3.5 py-1.5 rounded-md border border-neutral-200 dark:border-neutral-800 text-xs font-semibold text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
           >
             <ChevronLeft className="w-4 h-4" />
             <span>Previous</span>
           </button>
 
-          <span className="text-xs text-neutral-400">
+          <span className="text-xs font-mono text-neutral-400">
             {answeredCount} / {totalQ} Answered
           </span>
 
           {currentQuestionIndex + 1 < totalQ ? (
             <button
               onClick={() => setCurrentQuestionIndex((prev) => prev + 1)}
-              className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-xs transition-colors flex items-center gap-1"
+              className="px-4 py-1.5 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-xs transition-colors flex items-center gap-1"
             >
               <span>Next</span>
               <ChevronRight className="w-4 h-4" />
@@ -839,7 +839,7 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
           ) : (
             <button
               onClick={() => setShowSubmitConfirm(true)}
-              className="px-5 py-2 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-bold shadow-md hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-colors"
+              className="px-4 py-1.5 rounded-md bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-bold shadow-xs hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-colors"
             >
               Finish & Review
             </button>
@@ -848,19 +848,19 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
 
         {/* Submit Confirmation Modal */}
         {showSubmitConfirm && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl max-w-md w-full p-6 text-center shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto mb-4">
-                <CheckCircle2 className="w-6 h-6" />
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl max-w-sm w-full p-5 text-center shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+              <div className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white flex items-center justify-center mx-auto mb-3">
+                <CheckCircle2 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
               </div>
-              <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-1">
-                Ready to Submit Your Exam?
+              <h3 className="text-base font-bold text-neutral-900 dark:text-white mb-1">
+                Submit Your Exam?
               </h3>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-4">
-                You have answered <span className="font-semibold text-neutral-800 dark:text-neutral-200">{answeredCount} of {totalQ}</span> questions.
+                You have answered <span className="font-semibold text-neutral-800 dark:text-neutral-200 font-mono">{answeredCount} of {totalQ}</span> questions.
                 {answeredCount < totalQ && (
-                  <span className="block text-amber-600 dark:text-amber-400 font-semibold mt-1">
-                    Warning: You have {totalQ - answeredCount} unanswered questions!
+                  <span className="block text-amber-600 dark:text-amber-400 font-medium mt-1">
+                    Warning: {totalQ - answeredCount} questions are unanswered.
                   </span>
                 )}
               </p>
@@ -868,13 +868,13 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
               <div className="flex gap-2 justify-center">
                 <button
                   onClick={() => setShowSubmitConfirm(false)}
-                  className="px-4 py-2 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-xl"
+                  className="px-3.5 py-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-md"
                 >
                   Keep Working
                 </button>
                 <button
                   onClick={handleSubmitTest}
-                  className="px-5 py-2 text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl shadow-sm"
+                  className="px-4 py-1.5 text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white rounded-md shadow-xs"
                 >
                   Submit for Score
                 </button>
@@ -893,24 +893,24 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
     <div className="max-w-3xl mx-auto px-4 py-8">
       {/* Title */}
       <div className="text-center mb-8">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/60 mb-3">
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/60 mb-3">
           <Award className="w-3.5 h-3.5 text-indigo-500" />
-          <span>Diagnostic Topic Assessments</span>
+          <span>Diagnostic Assessments</span>
         </div>
-        <h1 className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
-          Take a Standardized Topic Test
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
+          Standardized Topic Assessment
         </h1>
-        <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400 max-w-lg mx-auto">
-          Test your mastery under realistic exam conditions. Get an in-depth subtopic diagnostic, identify knowledge gaps, and convert missed questions into active recall cards.
+        <p className="mt-2 text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 max-w-lg mx-auto">
+          Test recall under simulated examination conditions. Review an in-depth subtopic diagnostic and convert missed questions into spaced flashcards.
         </p>
       </div>
 
       {/* Test Setup Form */}
-      <div className="p-6 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-6">
+      <div className="p-6 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs space-y-6">
         {/* Choose Deck / Topic */}
         <div>
-          <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2">
-            Select Topic / Deck
+          <label className="block text-[11px] font-mono font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2">
+            Select Topic or Study Deck
           </label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
             {decks.map((deck) => (
@@ -921,7 +921,7 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
                   setActiveDeck(deck);
                   setCustomTopic('');
                 }}
-                className={`p-3 text-left rounded-xl border transition-all flex items-center justify-between ${
+                className={`p-3 text-left rounded-lg border transition-all flex items-center justify-between ${
                   activeDeck?.id === deck.id
                     ? 'border-indigo-600 bg-indigo-50/60 dark:bg-indigo-950/40 text-indigo-900 dark:text-indigo-100 ring-1 ring-indigo-500/20 shadow-xs'
                     : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 text-neutral-700 dark:text-neutral-300'
@@ -929,7 +929,7 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
               >
                 <div className="truncate pr-2">
                   <div className="text-xs font-bold truncate">{deck.title}</div>
-                  <div className="text-[11px] text-neutral-400">{deck.cards.length} flashcards</div>
+                  <div className="text-[11px] font-mono text-neutral-400">{deck.cards.length} flashcards</div>
                 </div>
                 {activeDeck?.id === deck.id && (
                   <CheckCircle2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
@@ -938,24 +938,24 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
             ))}
           </div>
 
-          <div className="pt-2">
-            <span className="text-[11px] text-neutral-400 block mb-1">Or test on a custom topic:</span>
+          <div className="pt-1">
+            <span className="text-[11px] font-mono text-neutral-400 block mb-1">Or enter a custom domain:</span>
             <input
               type="text"
-              placeholder="e.g. Molecular Genetics & Transcription, Immunology, Microeconomics..."
+              placeholder="e.g. Molecular Genetics & Transcription, Microeconomics, Clinical Pathology..."
               value={customTopic}
               onChange={(e) => {
                 setCustomTopic(e.target.value);
                 setActiveDeck(null);
               }}
-              className="w-full text-xs p-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full text-xs p-2.5 rounded-md border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-neutral-900 dark:focus:ring-white"
             />
           </div>
         </div>
 
         {/* Number of Questions */}
         <div>
-          <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2">
+          <label className="block text-[11px] font-mono font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2">
             Number of Questions
           </label>
           <div className="grid grid-cols-4 gap-2">
@@ -964,9 +964,9 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
                 key={num}
                 type="button"
                 onClick={() => setQuestionCount(num)}
-                className={`py-2 text-xs font-bold rounded-xl border transition-all ${
+                className={`py-2 text-xs font-semibold rounded-md border transition-all ${
                   questionCount === num
-                    ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 shadow-xs'
+                    ? 'border-indigo-600 bg-indigo-50/80 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 shadow-2xs font-bold'
                     : 'border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-850'
                 }`}
               >
@@ -978,43 +978,43 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
 
         {/* Test Mode & Timer */}
         <div>
-          <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2">
-            Test Mode
+          <label className="block text-[11px] font-mono font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2">
+            Examination Mode
           </label>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5">
             <button
               type="button"
               onClick={() => setTestMode('timed')}
-              className={`p-3 rounded-xl border text-left transition-all ${
+              className={`p-3 rounded-lg border text-left transition-all ${
                 testMode === 'timed'
-                  ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-900 dark:text-indigo-100 shadow-xs'
+                  ? 'border-indigo-600 bg-indigo-50/60 dark:bg-indigo-950/60 text-indigo-900 dark:text-indigo-100 shadow-xs ring-1 ring-indigo-500/20'
                   : 'border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-850'
               }`}
             >
-              <div className="flex items-center gap-2 font-bold text-xs mb-0.5">
+              <div className="flex items-center gap-1.5 font-bold text-xs mb-0.5">
                 <Timer className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                <span>Timed Exam Mode</span>
+                <span>Timed Examination</span>
               </div>
-              <div className="text-[11px] text-neutral-400 leading-snug">
-                Simulates real testing with live countdown and submit review
+              <div className="text-[11px] text-neutral-500 dark:text-neutral-400 leading-snug">
+                Simulates exam conditions with live countdown and auto-submission
               </div>
             </button>
 
             <button
               type="button"
               onClick={() => setTestMode('practice')}
-              className={`p-3 rounded-xl border text-left transition-all ${
+              className={`p-3 rounded-lg border text-left transition-all ${
                 testMode === 'practice'
-                  ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-900 dark:text-indigo-100 shadow-xs'
+                  ? 'border-indigo-600 bg-indigo-50/60 dark:bg-indigo-950/60 text-indigo-900 dark:text-indigo-100 shadow-xs ring-1 ring-indigo-500/20'
                   : 'border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-850'
               }`}
             >
-              <div className="flex items-center gap-2 font-bold text-xs mb-0.5">
+              <div className="flex items-center gap-1.5 font-bold text-xs mb-0.5">
                 <BookOpen className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
                 <span>Untimed Practice</span>
               </div>
-              <div className="text-[11px] text-neutral-400 leading-snug">
-                Relaxed pace without countdown timer
+              <div className="text-[11px] text-neutral-500 dark:text-neutral-400 leading-snug">
+                Self-paced review without strict countdown pressure
               </div>
             </button>
           </div>
@@ -1022,22 +1022,22 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
 
         {/* Difficulty */}
         <div>
-          <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2">
-            Exam Calibration
+          <label className="block text-[11px] font-mono font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2">
+            Calibration Level
           </label>
           <div className="grid grid-cols-3 gap-2">
             {[
-              { id: 'standard', label: 'Standard', desc: 'College/Coursework' },
-              { id: 'challenging', label: 'Challenging', desc: 'Case studies & deduction' },
-              { id: 'comprehensive', label: 'Comprehensive', desc: 'Full-breadth scope' },
+              { id: 'standard', label: 'Standard', desc: 'Core foundational coursework' },
+              { id: 'challenging', label: 'Challenging', desc: 'Application & synthesis cases' },
+              { id: 'comprehensive', label: 'Comprehensive', desc: 'Exhaustive full-breadth scope' },
             ].map((d) => (
               <button
                 key={d.id}
                 type="button"
                 onClick={() => setDifficulty(d.id as any)}
-                className={`p-2.5 text-left rounded-xl border transition-all ${
+                className={`p-2.5 text-left rounded-lg border transition-all ${
                   difficulty === d.id
-                    ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 shadow-xs'
+                    ? 'border-indigo-600 bg-indigo-50/80 dark:bg-indigo-950/60 text-indigo-800 dark:text-indigo-300 shadow-2xs font-semibold'
                     : 'border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-850'
                 }`}
               >
@@ -1050,27 +1050,27 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
 
         {/* Error Notice */}
         {generationError && (
-          <div className="p-3.5 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-2">
+          <div className="p-3 rounded-md border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-2">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{generationError}</span>
           </div>
         )}
 
         {/* Launch Button */}
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
+        <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-neutral-100 dark:border-neutral-800">
           <button
             onClick={onBackToDashboard}
-            className="px-4 py-2.5 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-xl"
+            className="px-3.5 py-2 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-md"
           >
             Cancel
           </button>
           <button
             onClick={handleStartTest}
             disabled={isGenerating || (!activeDeck && !customTopic.trim())}
-            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold text-xs shadow-md shadow-indigo-600/25 transition-all flex items-center gap-2 disabled:opacity-50"
+            className="px-5 py-2 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-xs transition-all flex items-center gap-2 disabled:opacity-50"
           >
-            <Sparkles className="w-4 h-4" />
-            <span>{isGenerating ? 'Synthesizing Exam...' : `Start ${questionCount}-Question Assessment`}</span>
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>{isGenerating ? 'Synthesizing Test...' : `Start ${questionCount}-Question Assessment`}</span>
           </button>
         </div>
       </div>

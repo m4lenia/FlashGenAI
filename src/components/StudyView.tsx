@@ -254,40 +254,40 @@ export const StudyView: React.FC<StudyViewProps> = ({
     const easyCount = sessionLogs.filter((l) => l.rating === 'easy').length;
 
     return (
-      <div className="max-w-lg mx-auto px-4 py-12 text-center animate-in fade-in zoom-in-95 duration-300">
-        <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-violet-500 text-white flex items-center justify-center mx-auto mb-6 shadow-xl shadow-indigo-500/25">
-          <Award className="w-10 h-10" />
+      <div className="max-w-lg mx-auto px-4 py-12 text-center animate-in fade-in zoom-in-95 duration-200">
+        <div className="w-14 h-14 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 flex items-center justify-center mx-auto mb-5 shadow-sm">
+          <Award className="w-7 h-7" />
         </div>
 
-        <h2 className="text-3xl font-extrabold text-neutral-900 dark:text-white mb-2">
-          Session Complete!
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-neutral-900 dark:text-white tracking-tight mb-2">
+          Session Complete
         </h2>
-        <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-8">
+        <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mb-6">
           You reviewed {sessionLogs.length} flashcards in <span className="font-semibold text-neutral-800 dark:text-neutral-200">{deck.title}</span>.
         </p>
 
         {/* Rating Breakdown Badges */}
-        <div className="grid grid-cols-4 gap-2.5 mb-8">
-          <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200/60 dark:border-rose-900/60">
-            <div className="text-xl font-bold text-rose-600 dark:text-rose-400">{againCount}</div>
-            <div className="text-[11px] font-semibold text-rose-700 dark:text-rose-300">Again</div>
+        <div className="grid grid-cols-4 gap-2 mb-6">
+          <div className="p-3 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200/60 dark:border-rose-900/60">
+            <div className="text-lg font-bold font-mono text-rose-600 dark:text-rose-400">{againCount}</div>
+            <div className="text-[10px] font-mono uppercase tracking-wider text-rose-700 dark:text-rose-300">Again</div>
           </div>
-          <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-900/60">
-            <div className="text-xl font-bold text-amber-600 dark:text-amber-400">{hardCount}</div>
-            <div className="text-[11px] font-semibold text-amber-700 dark:text-amber-300">Hard</div>
+          <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-900/60">
+            <div className="text-lg font-bold font-mono text-amber-600 dark:text-amber-400">{hardCount}</div>
+            <div className="text-[10px] font-mono uppercase tracking-wider text-amber-700 dark:text-amber-300">Hard</div>
           </div>
-          <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-900/60">
-            <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400">{goodCount}</div>
-            <div className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">Good</div>
+          <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-900/60">
+            <div className="text-lg font-bold font-mono text-emerald-600 dark:text-emerald-400">{goodCount}</div>
+            <div className="text-[10px] font-mono uppercase tracking-wider text-emerald-700 dark:text-emerald-300">Good</div>
           </div>
-          <div className="p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200/60 dark:border-indigo-900/60">
-            <div className="text-xl font-bold text-indigo-600 dark:text-indigo-400">{easyCount}</div>
-            <div className="text-[11px] font-semibold text-indigo-700 dark:text-indigo-300">Easy</div>
+          <div className="p-3 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200/60 dark:border-indigo-900/60">
+            <div className="text-lg font-bold font-mono text-indigo-600 dark:text-indigo-400">{easyCount}</div>
+            <div className="text-[10px] font-mono uppercase tracking-wider text-indigo-700 dark:text-indigo-300">Easy</div>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+        <div className="flex flex-col sm:flex-row gap-2.5 justify-center">
           <button
             onClick={() => {
               setCurrentIndex(0);
@@ -295,16 +295,16 @@ export const StudyView: React.FC<StudyViewProps> = ({
               setSessionCompleted(false);
               setSessionLogs([]);
             }}
-            className="px-5 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200 font-semibold text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2"
+            className="px-4 py-2 rounded-md border border-neutral-300 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200 font-medium text-xs hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center justify-center gap-1.5"
           >
-            <Repeat className="w-4 h-4" />
+            <Repeat className="w-3.5 h-3.5" />
             <span>Study Again</span>
           </button>
           <button
             onClick={onBackToDashboard}
-            className="px-6 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-500 shadow-md shadow-indigo-600/25 transition-colors"
+            className="px-5 py-2 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-xs transition-colors"
           >
-            Return to Dashboard
+            Return to Decks
           </button>
         </div>
       </div>
@@ -409,17 +409,17 @@ export const StudyView: React.FC<StudyViewProps> = ({
       <div className="perspective-1000 w-full min-h-[380px] sm:min-h-[420px] select-none my-4">
         <div
           onClick={handleFlip}
-          className={`relative w-full min-h-[380px] sm:min-h-[420px] rounded-3xl transition-transform duration-500 preserve-3d cursor-pointer shadow-lg hover:shadow-xl ${
+          className={`relative w-full min-h-[380px] sm:min-h-[420px] rounded-xl transition-transform duration-500 preserve-3d cursor-pointer shadow-sm hover:shadow-md ${
             isFlipped ? 'rotate-y-180' : ''
           }`}
         >
           {/* ================= FRONT FACE ================= */}
-          <div className="absolute inset-0 backface-hidden rounded-3xl p-6 sm:p-8 flex flex-col justify-between bg-white dark:bg-neutral-900 border border-neutral-200/90 dark:border-neutral-800">
+          <div className="absolute inset-0 backface-hidden rounded-xl p-6 sm:p-8 flex flex-col justify-between bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
             {/* Card Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <span
-                  className={`text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
+                  className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${
                     currentCard.difficulty === 'easy'
                       ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-400'
                       : currentCard.difficulty === 'hard'
@@ -431,7 +431,7 @@ export const StudyView: React.FC<StudyViewProps> = ({
                 </span>
 
                 {isReverseMode && (
-                  <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-md bg-violet-100 text-violet-700 dark:bg-violet-950/80 dark:text-violet-300">
+                  <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-md bg-violet-100 text-violet-700 dark:bg-violet-950/80 dark:text-violet-300">
                     Reverse Mode
                   </span>
                 )}
@@ -441,7 +441,7 @@ export const StudyView: React.FC<StudyViewProps> = ({
                 {/* Audio button */}
                 <button
                   onClick={() => handleSpeak(frontContent)}
-                  className="p-2 rounded-lg text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  className="p-1.5 rounded-md text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                   title="Read aloud"
                 >
                   <Volume2 className="w-4 h-4" />
@@ -450,7 +450,7 @@ export const StudyView: React.FC<StudyViewProps> = ({
                 {/* Star button */}
                 <button
                   onClick={handleToggleStar}
-                  className="p-2 rounded-lg text-neutral-400 hover:text-amber-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  className="p-1.5 rounded-md text-neutral-400 hover:text-amber-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                   title="Favorite / Star Card (Press S)"
                 >
                   <Star
@@ -464,7 +464,7 @@ export const StudyView: React.FC<StudyViewProps> = ({
 
             {/* Prompt / Question Content */}
             <div className="my-auto py-6">
-              <div className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 tracking-wider uppercase mb-2">
+              <div className="text-[11px] font-mono font-semibold text-neutral-400 dark:text-neutral-500 tracking-wider uppercase mb-2">
                 {isReverseMode ? 'Answer (Identify the Question)' : 'Question / Concept'}
               </div>
               <div className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-white leading-snug">
@@ -477,7 +477,7 @@ export const StudyView: React.FC<StudyViewProps> = ({
                   {currentCard.tags.map((tag, tIdx) => (
                     <span
                       key={tIdx}
-                      className="text-xs px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
+                      className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
                     >
                       #{tag}
                     </span>
@@ -499,24 +499,24 @@ export const StudyView: React.FC<StudyViewProps> = ({
           </div>
 
           {/* ================= BACK FACE ================= */}
-          <div className="absolute inset-0 backface-hidden rotate-y-180 rounded-3xl p-6 sm:p-8 flex flex-col justify-between bg-gradient-to-b from-white to-neutral-50 dark:from-neutral-900 dark:to-neutral-950 border border-neutral-200/90 dark:border-neutral-800">
+          <div className="absolute inset-0 backface-hidden rotate-y-180 rounded-xl p-6 sm:p-8 flex flex-col justify-between bg-neutral-50/50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
             {/* Header */}
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/80 px-2.5 py-0.5 rounded-full">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/80 px-2 py-0.5 rounded-md border border-emerald-200/60 dark:border-emerald-800/60">
                 {isReverseMode ? 'Target Question' : 'Target Answer'}
               </span>
 
               <div className="flex items-center space-x-1" onClick={(e) => e.stopPropagation()}>
                 <button
                   onClick={() => handleSpeak(backContent)}
-                  className="p-2 rounded-lg text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  className="p-1.5 rounded-md text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                   title="Read aloud"
                 >
                   <Volume2 className="w-4 h-4" />
                 </button>
                 <button
                   onClick={handleToggleStar}
-                  className="p-2 rounded-lg text-neutral-400 hover:text-amber-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  className="p-1.5 rounded-md text-neutral-400 hover:text-amber-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                 >
                   <Star
                     className={`w-4 h-4 ${
@@ -535,8 +535,8 @@ export const StudyView: React.FC<StudyViewProps> = ({
 
               {/* Context / Explanation */}
               {currentCard.explanation && (
-                <div className="p-3.5 rounded-xl bg-neutral-100/80 dark:bg-neutral-800/60 border border-neutral-200/60 dark:border-neutral-700/60 text-xs sm:text-sm text-neutral-600 dark:text-neutral-300 leading-relaxed mt-4">
-                  <span className="font-semibold text-neutral-900 dark:text-neutral-100">Why: </span>
+                <div className="p-3.5 rounded-lg bg-white dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700 text-xs sm:text-sm text-neutral-600 dark:text-neutral-300 leading-relaxed mt-4">
+                  <span className="font-semibold text-neutral-900 dark:text-neutral-100">Rationale: </span>
                   {currentCard.explanation}
                 </div>
               )}
@@ -560,16 +560,16 @@ export const StudyView: React.FC<StudyViewProps> = ({
           RATING BUTTONS (SM-2 ALGORITHM)
       ========================================== */}
       {isFlipped ? (
-        <div className="mt-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
-          <div className="text-center text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-2">
-            Rate your recall to calibrate next review (or press 1 - 4):
+        <div className="mt-4 animate-in fade-in slide-in-from-bottom-1 duration-150">
+          <div className="text-center text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-2.5">
+            Calibrate recall for next spaced interval (or keys 1 - 4):
           </div>
 
-          <div className="grid grid-cols-4 gap-2 sm:gap-3">
+          <div className="grid grid-cols-4 gap-2">
             {/* Again */}
             <button
               onClick={() => handleRate('again')}
-              className="group p-3 rounded-2xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-950/70 border border-rose-200 dark:border-rose-900/60 transition-all text-center flex flex-col items-center justify-center hover:scale-[1.02]"
+              className="p-3 rounded-lg bg-rose-50/70 hover:bg-rose-100/80 dark:bg-rose-950/40 dark:hover:bg-rose-950/70 border border-rose-200 dark:border-rose-900/60 transition-all text-center flex flex-col items-center justify-center"
             >
               <span className="text-xs font-bold text-rose-700 dark:text-rose-400 flex items-center gap-1">
                 Again <kbd className="text-[10px] font-mono bg-rose-200/60 dark:bg-rose-900/60 px-1 rounded">1</kbd>
@@ -582,7 +582,7 @@ export const StudyView: React.FC<StudyViewProps> = ({
             {/* Hard */}
             <button
               onClick={() => handleRate('hard')}
-              className="group p-3 rounded-2xl bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-950/70 border border-amber-200 dark:border-amber-900/60 transition-all text-center flex flex-col items-center justify-center hover:scale-[1.02]"
+              className="p-3 rounded-lg bg-amber-50/70 hover:bg-amber-100/80 dark:bg-amber-950/40 dark:hover:bg-amber-950/70 border border-amber-200 dark:border-amber-900/60 transition-all text-center flex flex-col items-center justify-center"
             >
               <span className="text-xs font-bold text-amber-700 dark:text-amber-400 flex items-center gap-1">
                 Hard <kbd className="text-[10px] font-mono bg-amber-200/60 dark:bg-amber-900/60 px-1 rounded">2</kbd>
@@ -595,7 +595,7 @@ export const StudyView: React.FC<StudyViewProps> = ({
             {/* Good */}
             <button
               onClick={() => handleRate('good')}
-              className="group p-3 rounded-2xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-950/70 border border-emerald-200 dark:border-emerald-900/60 transition-all text-center flex flex-col items-center justify-center hover:scale-[1.02]"
+              className="p-3 rounded-lg bg-emerald-50/70 hover:bg-emerald-100/80 dark:bg-emerald-950/40 dark:hover:bg-emerald-950/70 border border-emerald-200 dark:border-emerald-900/60 transition-all text-center flex flex-col items-center justify-center"
             >
               <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
                 Good <kbd className="text-[10px] font-mono bg-emerald-200/60 dark:bg-emerald-900/60 px-1 rounded">3</kbd>
@@ -608,7 +608,7 @@ export const StudyView: React.FC<StudyViewProps> = ({
             {/* Easy */}
             <button
               onClick={() => handleRate('easy')}
-              className="group p-3 rounded-2xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-950/70 border border-indigo-200 dark:border-indigo-900/60 transition-all text-center flex flex-col items-center justify-center hover:scale-[1.02]"
+              className="p-3 rounded-lg bg-indigo-50/70 hover:bg-indigo-100/80 dark:bg-indigo-950/40 dark:hover:bg-indigo-950/70 border border-indigo-200 dark:border-indigo-900/60 transition-all text-center flex flex-col items-center justify-center"
             >
               <span className="text-xs font-bold text-indigo-700 dark:text-indigo-400 flex items-center gap-1">
                 Easy <kbd className="text-[10px] font-mono bg-indigo-200/60 dark:bg-indigo-900/60 px-1 rounded">4</kbd>
@@ -625,7 +625,7 @@ export const StudyView: React.FC<StudyViewProps> = ({
           <button
             onClick={handlePrev}
             disabled={currentIndex === 0}
-            className="px-4 py-2 rounded-xl text-xs font-semibold border border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
+            className="px-3.5 py-1.5 rounded-md text-xs font-semibold border border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
           >
             <ChevronLeft className="w-4 h-4" />
             <span>Previous</span>
@@ -633,7 +633,7 @@ export const StudyView: React.FC<StudyViewProps> = ({
 
           <button
             onClick={handleFlip}
-            className="px-6 py-2.5 rounded-xl bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 font-semibold text-xs hover:bg-neutral-800 dark:hover:bg-neutral-200 shadow-sm transition-all"
+            className="px-5 py-2 rounded-md bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 font-semibold text-xs hover:bg-neutral-800 dark:hover:bg-neutral-200 shadow-xs transition-all"
           >
             Show Answer
           </button>
@@ -641,7 +641,7 @@ export const StudyView: React.FC<StudyViewProps> = ({
           <button
             onClick={handleNext}
             disabled={currentIndex === activeCards.length - 1}
-            className="px-4 py-2 rounded-xl text-xs font-semibold border border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
+            className="px-3.5 py-1.5 rounded-md text-xs font-semibold border border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
           >
             <span>Next</span>
             <ChevronRight className="w-4 h-4" />
