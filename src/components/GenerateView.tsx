@@ -14,9 +14,22 @@ import {
   Sliders,
   CheckCircle2,
   FileCheck2,
-  Tag
+  Tag,
+  Files,
+  Plus,
+  Paperclip
 } from 'lucide-react';
 import { Flashcard, GenerationDifficulty, GenerationFormat, Deck } from '../types';
+
+export interface UploadedFileItem {
+  id: string;
+  file: File;
+  base64: string;
+  mimeType: string;
+  name: string;
+  sizeFormatted: string;
+  size: number;
+}
 
 interface GenerateViewProps {
   onDeckCreated: (newDeck: Deck, startStudyImmediately?: boolean) => void;
@@ -40,13 +53,7 @@ const STUDY_TIPS = [
 
 export const GenerateView: React.FC<GenerateViewProps> = ({ onDeckCreated, onCancel }) => {
   const [activeTab, setActiveTab] = useState<'upload' | 'text'>('upload');
-  const [uploadedFile, setUploadedFile] = useState<{
-    file: File;
-    base64: string;
-    mimeType: string;
-    name: string;
-    sizeFormatted: string;
-  } | null>(null);
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFileItem[]>([]);
   const [rawText, setRawText] = useState('');
   const [deckTitle, setDeckTitle] = useState('');
   const [tagsInput, setTagsInput] = useState('');
@@ -99,37 +106,68 @@ export const GenerateView: React.FC<GenerateViewProps> = ({ onDeckCreated, onCan
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  // Process File to Base64
-  const handleFile = (file: File) => {
+  // Process multiple files to Base64
+  const handleFiles = (incoming: FileList | File[]) => {
     setError(null);
-    if (file.size > 25 * 1024 * 1024) {
-      setError('File size exceeds 25MB limit. Please upload a smaller document.');
+    const newFiles = Array.from(incoming);
+    if (newFiles.length === 0) return;
+
+    const currentTotalSize = uploadedFiles.reduce((acc, f) => acc + f.size, 0);
+    const newTotalSize = newFiles.reduce((acc, f) => acc + f.size, 0);
+
+    if (currentTotalSize + newTotalSize > 80 * 1024 * 1024) {
+      setError('Combined upload size exceeds 80MB. Please select fewer or smaller files.');
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      const base64 = result.split(',')[1] || '';
-      const mimeType = file.type || 'application/octet-stream';
-      setUploadedFile({
-        file,
-        base64,
-        mimeType,
-        name: file.name,
-        sizeFormatted: formatBytes(file.size),
-      });
-
-      // Suggest deck title based on file name if not already set
-      if (!deckTitle) {
-        const cleanName = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
-        setDeckTitle(cleanName.charAt(0).toUpperCase() + cleanName.slice(1));
+    newFiles.forEach((file) => {
+      if (file.size > 30 * 1024 * 1024) {
+        setError(`File "${file.name}" exceeds 30MB limit.`);
+        return;
       }
-    };
-    reader.onerror = () => {
-      setError('Failed to read file. Please try again.');
-    };
-    reader.readAsDataURL(file);
+
+      // Skip already uploaded duplicates
+      if (uploadedFiles.some((f) => f.name === file.name && f.size === file.size)) {
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        const base64 = result.split(',')[1] || '';
+        const mimeType = file.type || 'application/octet-stream';
+        const fileItem: UploadedFileItem = {
+          id: `file-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+          file,
+          base64,
+          mimeType,
+          name: file.name,
+          sizeFormatted: formatBytes(file.size),
+          size: file.size,
+        };
+
+        setUploadedFiles((prev) => [...prev, fileItem]);
+
+        // Suggest deck title if not already set
+        setDeckTitle((prev) => {
+          if (prev) return prev;
+          const cleanName = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+          return cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+        });
+      };
+      reader.onerror = () => {
+        setError(`Failed to read "${file.name}". Please try again.`);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleRemoveFile = (id: string) => {
+    setUploadedFiles((prev) => prev.filter((f) => f.id !== id));
+  };
+
+  const handleClearAllFiles = () => {
+    setUploadedFiles([]);
   };
 
   const onDragOver = (e: React.DragEvent) => {
@@ -144,8 +182,8 @@ export const GenerateView: React.FC<GenerateViewProps> = ({ onDeckCreated, onCan
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFile(e.dataTransfer.files[0]);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFiles(e.dataTransfer.files);
     }
   };
 
@@ -153,8 +191,8 @@ export const GenerateView: React.FC<GenerateViewProps> = ({ onDeckCreated, onCan
   const handleGenerate = async () => {
     setError(null);
 
-    if (activeTab === 'upload' && !uploadedFile) {
-      setError('Please select or drag-and-drop a file to generate flashcards.');
+    if (activeTab === 'upload' && uploadedFiles.length === 0) {
+      setError('Please select or drag-and-drop at least one file to generate flashcards.');
       return;
     }
 
@@ -171,9 +209,11 @@ export const GenerateView: React.FC<GenerateViewProps> = ({ onDeckCreated, onCan
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          fileBase64: uploadedFile?.base64,
-          mimeType: uploadedFile?.mimeType,
-          fileName: uploadedFile?.name,
+          files: uploadedFiles.map((f) => ({
+            fileBase64: f.base64,
+            mimeType: f.mimeType,
+            fileName: f.name,
+          })),
           rawText: activeTab === 'text' ? rawText : undefined,
           count,
           difficulty,
@@ -285,14 +325,29 @@ export const GenerateView: React.FC<GenerateViewProps> = ({ onDeckCreated, onCan
       ? parsedTags 
       : Array.from(new Set(generatedCards.flatMap((c) => c.tags || []))).slice(0, 4);
 
-    const title = deckTitle.trim() || (uploadedFile ? uploadedFile.name.replace(/\.[^/.]+$/, '') : 'Generated Flashcard Deck');
+    const primaryFile = uploadedFiles[0];
+    const defaultTitle = primaryFile 
+      ? primaryFile.name.replace(/\.[^/.]+$/, '') 
+      : 'Generated Flashcard Deck';
+    const title = deckTitle.trim() || defaultTitle;
+
+    const sourceSummary = uploadedFiles.length > 1
+      ? `${uploadedFiles.length} files (${uploadedFiles.map((f) => f.name).join(', ')})`
+      : primaryFile?.name || 'study notes';
 
     const newDeck: Deck = {
       id: `deck-${Date.now()}`,
       title,
-      description: focusTopic ? `Focus: ${focusTopic}` : `Generated from ${uploadedFile ? uploadedFile.name : 'study notes'} with ${generatedCards.length} flashcards`,
-      sourceFileName: uploadedFile?.name,
-      sourceFileType: uploadedFile ? uploadedFile.mimeType.split('/')[1]?.toUpperCase() || 'FILE' : 'NOTES',
+      description: focusTopic 
+        ? `Focus: ${focusTopic}` 
+        : `Generated from ${sourceSummary} with ${generatedCards.length} flashcards`,
+      sourceFileName: primaryFile?.name,
+      sourceFileNames: uploadedFiles.map((f) => f.name),
+      sourceFileType: uploadedFiles.length > 1 
+        ? 'MULTI-FILE' 
+        : primaryFile 
+        ? primaryFile.mimeType.split('/')[1]?.toUpperCase() || 'FILE' 
+        : 'NOTES',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       tags: allTags.length > 0 ? allTags : ['Study'],
@@ -549,8 +604,22 @@ export const GenerateView: React.FC<GenerateViewProps> = ({ onDeckCreated, onCan
 
       {/* Input Section */}
       {activeTab === 'upload' ? (
-        <div className="mb-5">
-          {!uploadedFile ? (
+        <div className="mb-5 space-y-3">
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept=".pdf,.docx,.txt,.md,.png,.jpg,.jpeg,.webp,.pptx"
+            className="hidden"
+            onChange={(e) => {
+              if (e.target.files && e.target.files.length > 0) {
+                handleFiles(e.target.files);
+                e.target.value = '';
+              }
+            }}
+          />
+
+          {uploadedFiles.length === 0 ? (
             <div
               onDragOver={onDragOver}
               onDragLeave={onDragLeave}
@@ -562,17 +631,6 @@ export const GenerateView: React.FC<GenerateViewProps> = ({ onDeckCreated, onCan
                   : 'border-neutral-300 dark:border-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-600 bg-neutral-50/50 dark:bg-neutral-900/40'
               }`}
             >
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".pdf,.docx,.txt,.md,.png,.jpg,.jpeg,.webp,.pptx"
-                className="hidden"
-                onChange={(e) => {
-                  if (e.target.files && e.target.files[0]) {
-                    handleFile(e.target.files[0]);
-                  }
-                }}
-              />
               <div className="w-10 h-10 mx-auto rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 flex items-center justify-center mb-3">
                 <UploadCloud className="w-5 h-5" />
               </div>
@@ -580,34 +638,83 @@ export const GenerateView: React.FC<GenerateViewProps> = ({ onDeckCreated, onCan
                 Drag and drop study files here, or click to browse
               </p>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 max-w-sm mx-auto mb-3">
-                Supports PDF, DOCX, TXT, PPTX, and image formats (PNG, JPG).
+                Upload <strong>one or multiple files</strong> (PDF, DOCX, TXT, PPTX, or Images).
               </p>
               <span className="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 shadow-2xs hover:bg-neutral-50">
-                Select File
+                Select Files (Multi-Select Supported)
               </span>
             </div>
           ) : (
-            <div className="p-3.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex items-center justify-between">
-              <div className="flex items-center space-x-3 truncate">
-                <div className="w-8 h-8 rounded-md bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 flex items-center justify-center shrink-0">
-                  <FileCheck2 className="w-4 h-4" />
+            <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-900/60 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Files className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                  <span className="text-xs font-bold text-neutral-900 dark:text-white">
+                    Attached Files ({uploadedFiles.length})
+                  </span>
+                  <span className="text-[11px] font-mono text-neutral-400">
+                    • {formatBytes(uploadedFiles.reduce((acc, f) => acc + f.size, 0))} total
+                  </span>
                 </div>
-                <div className="truncate">
-                  <div className="text-xs font-semibold text-neutral-900 dark:text-white truncate">
-                    {uploadedFile.name}
-                  </div>
-                  <div className="text-[11px] text-neutral-500 dark:text-neutral-400 font-mono">
-                    {uploadedFile.sizeFormatted} • {uploadedFile.mimeType}
-                  </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="px-2.5 py-1 text-xs font-semibold rounded-md bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-750 text-neutral-800 dark:text-neutral-200 flex items-center gap-1 transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add More Files</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleClearAllFiles}
+                    className="text-xs text-neutral-400 hover:text-rose-500 transition-colors"
+                  >
+                    Clear All
+                  </button>
                 </div>
               </div>
-              <button
-                onClick={() => setUploadedFile(null)}
-                className="p-1.5 text-neutral-400 hover:text-rose-500 rounded transition-colors"
-                title="Remove file"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
+
+              {/* Multi-file list */}
+              <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
+                {uploadedFiles.map((item, idx) => {
+                  const isImg = item.mimeType.startsWith('image/');
+                  return (
+                    <div
+                      key={item.id}
+                      className="p-2.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 flex items-center justify-between transition-colors"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-7 h-7 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 flex items-center justify-center shrink-0">
+                          {isImg ? <ImageIcon className="w-3.5 h-3.5" /> : <FileText className="w-3.5 h-3.5" />}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-xs font-semibold text-neutral-900 dark:text-white truncate">
+                            {item.name}
+                          </div>
+                          <div className="text-[10px] text-neutral-500 dark:text-neutral-400 font-mono">
+                            File #{idx + 1} • {item.sizeFormatted} • {item.mimeType.split('/')[1] || item.mimeType}
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveFile(item.id)}
+                        className="p-1 text-neutral-400 hover:text-rose-500 rounded transition-colors shrink-0"
+                        title="Remove this file"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="text-[11px] text-neutral-500 dark:text-neutral-400 bg-indigo-50/40 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/30 p-2 rounded-md flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                <span>Gemini will cross-reference and synthesize questions across all {uploadedFiles.length} files.</span>
+              </div>
             </div>
           )}
         </div>
@@ -754,7 +861,7 @@ export const GenerateView: React.FC<GenerateViewProps> = ({ onDeckCreated, onCan
         </button>
         <button
           onClick={handleGenerate}
-          disabled={isGenerating || (activeTab === 'upload' && !uploadedFile) || (activeTab === 'text' && !rawText.trim())}
+          disabled={isGenerating || (activeTab === 'upload' && uploadedFiles.length === 0) || (activeTab === 'text' && !rawText.trim())}
           className="px-4 py-1.5 text-xs font-semibold rounded-md bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-colors flex items-center gap-1.5 disabled:opacity-50"
         >
           <span>Generate {count} Cards</span>

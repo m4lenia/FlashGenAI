@@ -446,6 +446,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
                           {t}
                         </span>
                       ))}
+
+                      {deck.sourceFileNames && deck.sourceFileNames.length > 1 && (
+                        <span className="text-[10px] text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 px-1.5 py-0.5 rounded font-mono border border-indigo-200/50 dark:border-indigo-800/50">
+                          {deck.sourceFileNames.length} files
+                        </span>
+                      )}
                     </div>
 
                     {/* Menu toggle */}

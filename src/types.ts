@@ -8,6 +8,14 @@ export interface CardReviewLog {
   easeFactor: number;
 }
 
+export interface CardAttachment {
+  id: string;
+  name: string;
+  mimeType: string;
+  dataUrl: string; // Base64 data URL
+  sizeFormatted?: string;
+}
+
 export interface Flashcard {
   id: string;
   question: string;
@@ -16,6 +24,7 @@ export interface Flashcard {
   explanation?: string;
   tags?: string[];
   starred?: boolean;
+  attachments?: CardAttachment[]; // Multiple uploaded files / images for this card
   // SM-2 Spaced Repetition fields
   repetitions: number;
   interval: number; // days
@@ -33,6 +42,7 @@ export interface Deck {
   description?: string;
   sourceFileName?: string;
   sourceFileType?: string;
+  sourceFileNames?: string[];
   createdAt: string;
   updatedAt: string;
   tags: string[];

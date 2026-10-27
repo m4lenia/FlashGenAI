@@ -14,9 +14,9 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
-// Support large file uploads (PDFs, images)
-app.use(express.json({ limit: '60mb' }));
-app.use(express.urlencoded({ extended: true, limit: '60mb' }));
+// Support large multi-file uploads (PDFs, images, slides)
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 
 function getGeminiClient(): GoogleGenAI {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -72,7 +72,8 @@ app.get('/api/health', (_req: Request, res: Response) => {
 app.post('/api/flashcards/generate', async (req: Request, res: Response) => {
   try {
     const {
-      fileBase64,
+      files, // Array of { fileBase64, mimeType, fileName }
+      fileBase64, // backwards compatibility
       mimeType,
       fileName,
       rawText,
@@ -82,9 +83,17 @@ app.post('/api/flashcards/generate', async (req: Request, res: Response) => {
       focusTopic,
     } = req.body;
 
-    if (!fileBase64 && (!rawText || rawText.trim().length === 0)) {
+    // Normalizing file list
+    const fileList: Array<{ fileBase64: string; mimeType: string; fileName: string }> = [];
+    if (Array.isArray(files) && files.length > 0) {
+      fileList.push(...files.filter((f) => f && f.fileBase64));
+    } else if (fileBase64) {
+      fileList.push({ fileBase64, mimeType: mimeType || 'application/pdf', fileName: fileName || 'Document' });
+    }
+
+    if (fileList.length === 0 && (!rawText || rawText.trim().length === 0)) {
       return res.status(400).json({
-        error: 'Please provide a file (PDF, DOCX, image, or text) or text content to generate flashcards.',
+        error: 'Please provide at least one study file (PDF, DOCX, image, or text) or text content to generate flashcards.',
       });
     }
 
@@ -107,51 +116,58 @@ app.post('/api/flashcards/generate', async (req: Request, res: Response) => {
         : `Generate flashcards calibrated specifically to ${difficulty} difficulty level.`;
 
     const systemPrompt = `You are FlashGen AI, an expert educational design and spaced-repetition cognitive scientist.
-Your job is to read the provided material thoroughly and produce exactly ${count} high-yield, engaging flashcards for study and long-term memory retention.
+Your job is to read all provided materials thoroughly and produce exactly ${count} high-yield, engaging flashcards for study and long-term memory retention.
+You must synthesize knowledge across all provided files and notes to ensure complete, cohesive coverage.
 
 Requirements:
 1. Target quantity: exactly ${count} flashcards.
 2. Format style: ${formatInstructions}
 3. Difficulty calibration: ${difficultyPrompt}
 ${focusTopic ? `4. Special topic focus: Pay extra attention to: "${focusTopic}".` : ''}
-5. Avoid superficial trivia, vague questions, or duplicate concepts. Focus on core principles, definitions, cause-and-effect relationships, and key distinctions.
+5. Avoid superficial trivia, vague questions, or duplicate concepts. Focus on core principles, definitions, cause-and-effect relationships, and key distinctions across all source files.
 6. For each card, assign difficulty ("easy", "medium", or "hard"), write a crisp 1-2 sentence explanation reinforcing the logic, and tag with 1-3 relevant concept tags.`;
 
-    // Process file data
+    // Process files
     let processedText = rawText || '';
 
-    // Handle DOCX via mammoth if applicable
-    if (fileBase64 && mimeType && (mimeType.includes('wordprocessingml') || fileName?.endsWith('.docx'))) {
-      try {
-        const buffer = Buffer.from(fileBase64, 'base64');
-        const mammothResult = await mammoth.extractRawText({ buffer });
-        processedText = (processedText ? processedText + '\n\n' : '') + mammothResult.value;
-      } catch (err: any) {
-        console.warn('DOCX extraction warning, passing raw base64 or text:', err?.message);
-      }
-    }
+    for (let i = 0; i < fileList.length; i++) {
+      const item = fileList[i];
+      const itemMime = item.mimeType || 'application/octet-stream';
+      const itemName = item.fileName || `File ${i + 1}`;
 
-    // Handle PDF, Images, or native supported MIME types directly to Gemini multimodal
-    if (fileBase64 && mimeType) {
-      if (
-        mimeType.startsWith('image/') ||
-        mimeType === 'application/pdf' ||
-        mimeType === 'text/plain' ||
-        mimeType === 'text/markdown' ||
-        mimeType === 'text/csv'
+      // Handle DOCX via mammoth
+      if (item.fileBase64 && (itemMime.includes('wordprocessingml') || itemName.toLowerCase().endsWith('.docx'))) {
+        try {
+          const buffer = Buffer.from(item.fileBase64, 'base64');
+          const mammothResult = await mammoth.extractRawText({ buffer });
+          processedText += `\n\n--- Source File ${i + 1}: ${itemName} ---\n` + mammothResult.value;
+        } catch (err: any) {
+          console.warn(`DOCX extraction warning for ${itemName}:`, err?.message);
+        }
+      } else if (
+        item.fileBase64 &&
+        (itemMime.startsWith('image/') ||
+          itemMime === 'application/pdf' ||
+          itemMime === 'text/plain' ||
+          itemMime === 'text/markdown' ||
+          itemMime === 'text/csv')
       ) {
+        // Native Gemini Multimodal Support (PDF, Image, Plain text)
+        parts.push({
+          text: `[Source Material ${i + 1} of ${fileList.length}: ${itemName} (${itemMime})]`,
+        });
         parts.push({
           inlineData: {
-            mimeType,
-            data: fileBase64,
+            mimeType: itemMime,
+            data: item.fileBase64,
           },
         });
       }
     }
 
-    // Add text part
-    const promptText = `Please analyze the provided document/notes and generate ${count} comprehensive flashcards following all instructions.
-${processedText ? `\nExtracted Content / Additional Notes:\n"""\n${processedText.slice(0, 80000)}\n"""` : ''}`;
+    // Add prompt text instructions
+    const promptText = `Please analyze the provided ${fileList.length} document(s) and study notes thoroughly. Generate exactly ${count} comprehensive flashcards following all instructions.
+${processedText ? `\nExtracted Content / Additional Notes:\n"""\n${processedText.slice(0, 100000)}\n"""` : ''}`;
 
     parts.push({ text: promptText });
 
@@ -516,6 +532,7 @@ app.post('/api/studypages/generate', async (req: Request, res: Response) => {
     const {
       topic = 'Comprehensive Study Topic',
       rawText,
+      files,
       fileBase64,
       mimeType,
       fileName,
@@ -523,39 +540,48 @@ app.post('/api/studypages/generate', async (req: Request, res: Response) => {
       subject = 'General Knowledge',
     } = req.body;
 
-    if (!topic && !rawText && !fileBase64) {
+    const fileList: Array<{ fileBase64: string; mimeType: string; fileName: string }> = [];
+    if (Array.isArray(files) && files.length > 0) {
+      fileList.push(...files.filter((f) => f && f.fileBase64));
+    } else if (fileBase64) {
+      fileList.push({ fileBase64, mimeType: mimeType || 'application/pdf', fileName: fileName || 'Document' });
+    }
+
+    if (!topic && !rawText && fileList.length === 0) {
       return res.status(400).json({ error: 'Please provide a topic, document, or notes to generate a study page.' });
     }
 
     const ai = getGeminiClient();
     const parts: any[] = [];
+    let processedText = rawText || '';
 
-    // Multimodal attachments
-    if (fileBase64 && mimeType) {
-      if (
-        mimeType.startsWith('image/') ||
-        mimeType === 'application/pdf' ||
-        mimeType === 'text/plain' ||
-        mimeType === 'text/markdown'
+    // Process multiple attachments
+    for (let i = 0; i < fileList.length; i++) {
+      const item = fileList[i];
+      const itemMime = item.mimeType || 'application/octet-stream';
+      const itemName = item.fileName || `Source File ${i + 1}`;
+
+      if (item.fileBase64 && (itemMime.includes('wordprocessingml') || itemName.toLowerCase().endsWith('.docx'))) {
+        try {
+          const buffer = Buffer.from(item.fileBase64, 'base64');
+          const mammothResult = await mammoth.extractRawText({ buffer });
+          processedText += `\n\n--- Source Document ${i + 1}: ${itemName} ---\n` + mammothResult.value;
+        } catch (err: any) {
+          console.warn(`DOCX extraction warning for study page ${itemName}:`, err?.message);
+        }
+      } else if (
+        item.fileBase64 &&
+        (itemMime.startsWith('image/') ||
+          itemMime === 'application/pdf' ||
+          itemMime === 'text/plain' ||
+          itemMime === 'text/markdown')
       ) {
         parts.push({
           inlineData: {
-            mimeType,
-            data: fileBase64,
+            mimeType: itemMime,
+            data: item.fileBase64,
           },
         });
-      }
-    }
-
-    // Handle docx if applicable
-    let processedText = rawText || '';
-    if (fileBase64 && mimeType && (mimeType.includes('wordprocessingml') || fileName?.endsWith('.docx'))) {
-      try {
-        const buffer = Buffer.from(fileBase64, 'base64');
-        const mammothResult = await mammoth.extractRawText({ buffer });
-        processedText = (processedText ? processedText + '\n\n' : '') + mammothResult.value;
-      } catch (err: any) {
-        console.warn('DOCX extraction warning for study page:', err?.message);
       }
     }
 

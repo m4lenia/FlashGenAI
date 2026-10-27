@@ -85,11 +85,15 @@ export const AccountSwitcherModal: React.FC<AccountSwitcherModalProps> = ({
       onOpenSignIn();
     } catch (err: any) {
       console.error('Account switcher error:', err);
-      setError('Unable to auto-switch. Please enter your password in the sign-in modal.');
+      if (err?.code === 'auth/unauthorized-domain' || err?.message?.includes('auth/unauthorized-domain')) {
+        setError('Google Sign-In domain authorization required. Opening sign-in...');
+      } else {
+        setError('Unable to auto-switch. Please enter your password in the sign-in modal.');
+      }
       setTimeout(() => {
         onClose();
         onOpenSignIn();
-      }, 1500);
+      }, 1200);
     } finally {
       setLoading(false);
     }
@@ -117,11 +121,11 @@ export const AccountSwitcherModal: React.FC<AccountSwitcherModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl animate-in fade-in zoom-in-95 duration-200 relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl max-w-md w-full p-6 shadow-xl animate-in fade-in zoom-in-95 duration-150 relative">
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 p-1.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-xl"
+          className="absolute right-4 top-4 p-1 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-md"
         >
           <X className="w-4 h-4" />
         </button>

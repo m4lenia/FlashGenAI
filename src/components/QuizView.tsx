@@ -9,7 +9,8 @@ import {
   HelpCircle, 
   ArrowRight,
   Loader2,
-  Check
+  Check,
+  Paperclip
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Deck, Flashcard } from '../types';
@@ -289,6 +290,36 @@ export const QuizView: React.FC<QuizViewProps> = ({
         <h2 className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-white leading-snug">
           {currentQ.card.question}
         </h2>
+
+        {/* Card Attachments if present */}
+        {currentQ.card.attachments && currentQ.card.attachments.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-2 items-center">
+            {currentQ.card.attachments.map((att) => {
+              const isImg = att.mimeType.startsWith('image/') || att.dataUrl.startsWith('data:image/');
+              if (isImg) {
+                return (
+                  <div key={att.id} className="relative rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 shadow-2xs">
+                    <img src={att.dataUrl} alt={att.name} className="max-h-24 sm:max-h-32 max-w-[200px] object-contain rounded-lg" />
+                    <div className="absolute inset-x-0 bottom-0 bg-black/60 text-white text-[10px] px-1.5 py-0.5 truncate font-mono">
+                      {att.name}
+                    </div>
+                  </div>
+                );
+              }
+              return (
+                <a
+                  key={att.id}
+                  href={att.dataUrl}
+                  download={att.name}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-750 transition-colors border border-neutral-200 dark:border-neutral-700"
+                >
+                  <Paperclip className="w-3 h-3 text-neutral-500" />
+                  <span className="truncate max-w-[140px]">{att.name}</span>
+                </a>
+              );
+            })}
+          </div>
+        )}
 
         {currentQ.hint && (
           <div className="mt-4">

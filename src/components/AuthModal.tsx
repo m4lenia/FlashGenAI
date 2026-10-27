@@ -13,8 +13,12 @@ import {
   Trash2,
   KeyRound,
   Shield,
-  Clock
+  Clock,
+  ExternalLink,
+  Copy,
+  Check
 } from 'lucide-react';
+import firebaseConfig from '../../firebase-applet-config.json';
 import { 
   signInWithGoogle, 
   auth, 
@@ -56,7 +60,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [rememberPassword, setRememberPassword] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [copiedDomain, setCopiedDomain] = useState(false);
   const [rememberedAccounts, setRememberedAccounts] = useState<RememberedAccount[]>([]);
+
+  const currentHostname = typeof window !== 'undefined' ? window.location.hostname : 'your-app.vercel.app';
+  const firebaseSettingsUrl = `https://console.firebase.google.com/project/${firebaseConfig.projectId}/authentication/settings`;
+
+  const handleCopyDomain = () => {
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(currentHostname);
+      setCopiedDomain(true);
+      setTimeout(() => setCopiedDomain(false), 2000);
+    }
+  };
 
   // Load remembered accounts when opening
   useEffect(() => {
@@ -107,7 +123,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       onAuthSuccess?.(user);
     } catch (err: any) {
       console.error(err);
-      setError(err?.message || 'Failed to sign in with Google. Please try again.');
+      if (err?.code === 'auth/unauthorized-domain' || err?.message?.includes('auth/unauthorized-domain')) {
+        setError('auth/unauthorized-domain');
+      } else {
+        setError(err?.message || 'Failed to sign in with Google. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -180,11 +200,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
       if (account.isGoogle) {
         // Trigger Google Auth
-        const user = await signInWithGoogle();
-        handleRememberAccount(user, undefined, true);
-        onClose();
-        onAuthSuccess?.(user);
-        return;
+        try {
+          const user = await signInWithGoogle();
+          handleRememberAccount(user, undefined, true);
+          onClose();
+          onAuthSuccess?.(user);
+          return;
+        } catch (googleErr: any) {
+          if (googleErr?.code === 'auth/unauthorized-domain' || googleErr?.message?.includes('auth/unauthorized-domain')) {
+            setError('auth/unauthorized-domain');
+            return;
+          }
+          throw googleErr;
+        }
       }
 
       // Pre-populate email and prompt password
@@ -224,6 +252,79 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     } catch (e) {
       return 'Recently';
     }
+  };
+
+  const renderErrorBox = () => {
+    if (!error) return null;
+
+    const isUnauthorizedDomain = error.includes('auth/unauthorized-domain') || error.includes('unauthorized-domain');
+
+    if (isUnauthorizedDomain) {
+      return (
+        <div className="p-3 rounded-lg border border-amber-300 dark:border-amber-800 bg-amber-50/80 dark:bg-amber-950/40 text-xs text-neutral-800 dark:text-neutral-200 space-y-2.5 animate-in fade-in duration-150">
+          <div className="flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <div>
+              <div className="font-semibold text-neutral-900 dark:text-white">
+                Vercel Domain Authorization Required
+              </div>
+              <p className="text-[11px] text-neutral-600 dark:text-neutral-400 mt-0.5 leading-relaxed">
+                Firebase restricts Google Sign-In to authorized domains. Because you deployed to Vercel, this domain must be added once in your Firebase Console.
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-neutral-900 p-2.5 rounded-md border border-amber-200 dark:border-amber-900/60 space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] text-neutral-500 font-medium">Domain to add:</span>
+              <div className="flex items-center gap-1.5">
+                <code className="text-[11px] font-mono px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 font-semibold border border-neutral-200 dark:border-neutral-700">
+                  {currentHostname}
+                </code>
+                <button
+                  type="button"
+                  onClick={handleCopyDomain}
+                  className="p-1 rounded text-neutral-500 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  title="Copy domain name"
+                >
+                  {copiedDomain ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+            </div>
+
+            <div className="text-[11px] text-neutral-600 dark:text-neutral-400 space-y-1 pt-1 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="font-medium text-neutral-700 dark:text-neutral-300">Quick 3-step fix:</div>
+              <ol className="list-decimal pl-4 space-y-0.5 text-[10.5px]">
+                <li>Open the Firebase Console Settings link below</li>
+                <li>Under <strong>Authorized domains</strong>, click <strong>Add domain</strong></li>
+                <li>Paste <span className="font-mono font-semibold">{currentHostname}</span> and click <strong>Save</strong></li>
+              </ol>
+            </div>
+
+            <a
+              href={firebaseSettingsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline pt-0.5"
+            >
+              <span>Open Firebase Authentication Settings &rarr;</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
+
+          <div className="text-[11px] text-neutral-600 dark:text-neutral-400 bg-amber-100/50 dark:bg-amber-900/20 p-2 rounded">
+            <strong>Immediate workaround:</strong> You can sign in or create an account with <strong>Email & Password</strong> right now—it is not domain restricted!
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="p-2.5 rounded-md border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-2">
+        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+        <span>{error}</span>
+      </div>
+    );
   };
 
   return (
@@ -396,12 +497,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               })}
             </div>
 
-            {error && (
-              <div className="p-2.5 rounded-md border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-2">
-                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                <span>{error}</span>
-              </div>
-            )}
+            {renderErrorBox()}
 
             <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
               <button
@@ -555,12 +651,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 )}
               </div>
 
-              {error && (
-                <div className="p-2.5 rounded-md border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-2">
-                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                  <span>{error}</span>
-                </div>
-              )}
+              {renderErrorBox()}
 
               <button
                 type="submit"

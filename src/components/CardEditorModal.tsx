@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   X, 
   Plus, 
@@ -9,9 +9,12 @@ import {
   Check, 
   Sparkles,
   Search,
-  BookOpen
+  BookOpen,
+  Paperclip,
+  Image as ImageIcon,
+  FileText
 } from 'lucide-react';
-import { Deck, Flashcard } from '../types';
+import { Deck, Flashcard, CardAttachment } from '../types';
 
 interface CardEditorModalProps {
   deck: Deck;
@@ -37,10 +40,44 @@ export const CardEditorModal: React.FC<CardEditorModalProps> = ({
   const [editAnswer, setEditAnswer] = useState('');
   const [editDifficulty, setEditDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
   const [editExplanation, setEditExplanation] = useState('');
+  const [editAttachments, setEditAttachments] = useState<CardAttachment[]>([]);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
 
+  const cardAttachmentInputRef = useRef<HTMLInputElement>(null);
+
   if (!isOpen) return null;
+
+  const formatBytes = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  };
+
+  const handleAttachFiles = (files: FileList | File[]) => {
+    Array.from(files).forEach((file) => {
+      if (file.size > 15 * 1024 * 1024) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result as string;
+        const newAtt: CardAttachment = {
+          id: `att-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+          name: file.name,
+          mimeType: file.type || 'application/octet-stream',
+          dataUrl,
+          sizeFormatted: formatBytes(file.size),
+        };
+        setEditAttachments((prev) => [...prev, newAtt]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleRemoveAttachment = (attId: string) => {
+    setEditAttachments((prev) => prev.filter((a) => a.id !== attId));
+  };
 
   const filteredCards = cards.filter(
     (c) =>
@@ -55,6 +92,7 @@ export const CardEditorModal: React.FC<CardEditorModalProps> = ({
     setEditAnswer(card.answer);
     setEditDifficulty(card.difficulty);
     setEditExplanation(card.explanation || '');
+    setEditAttachments(card.attachments || []);
   };
 
   const handleSaveCardEdit = (cardId: string) => {
@@ -67,11 +105,13 @@ export const CardEditorModal: React.FC<CardEditorModalProps> = ({
               answer: editAnswer.trim(),
               difficulty: editDifficulty,
               explanation: editExplanation.trim(),
+              attachments: editAttachments,
             }
           : c
       )
     );
     setEditingCardId(null);
+    setEditAttachments([]);
   };
 
   const handleAddNewCard = () => {
@@ -83,6 +123,7 @@ export const CardEditorModal: React.FC<CardEditorModalProps> = ({
       answer: editAnswer.trim(),
       difficulty: editDifficulty,
       explanation: editExplanation.trim(),
+      attachments: editAttachments,
       starred: false,
       repetitions: 0,
       interval: 0,
@@ -96,6 +137,7 @@ export const CardEditorModal: React.FC<CardEditorModalProps> = ({
     setEditQuestion('');
     setEditAnswer('');
     setEditExplanation('');
+    setEditAttachments([]);
   };
 
   const handleDeleteCard = (cardId: string) => {
@@ -154,6 +196,88 @@ export const CardEditorModal: React.FC<CardEditorModalProps> = ({
     });
     onClose();
   };
+
+  const renderAttachmentEditor = () => (
+    <div className="pt-1">
+      <div className="flex items-center justify-between mb-1.5">
+        <label className="text-xs font-semibold text-neutral-600 dark:text-neutral-300 flex items-center gap-1.5">
+          <Paperclip className="w-3.5 h-3.5 text-neutral-400" />
+          <span>Card Files & Diagrams ({editAttachments.length})</span>
+        </label>
+        <button
+          type="button"
+          onClick={() => cardAttachmentInputRef.current?.click()}
+          className="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
+        >
+          <Plus className="w-3 h-3" />
+          <span>Upload Files / Images</span>
+        </button>
+      </div>
+
+      <input
+        ref={cardAttachmentInputRef}
+        type="file"
+        multiple
+        accept="image/*,.pdf,.txt,.md,.docx"
+        className="hidden"
+        onChange={(e) => {
+          if (e.target.files && e.target.files.length > 0) {
+            handleAttachFiles(e.target.files);
+            e.target.value = '';
+          }
+        }}
+      />
+
+      {editAttachments.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2 rounded-lg bg-neutral-100 dark:bg-neutral-850 border border-neutral-200 dark:border-neutral-750 max-h-36 overflow-y-auto">
+          {editAttachments.map((att) => {
+            const isImg = att.mimeType.startsWith('image/') || att.dataUrl.startsWith('data:image/');
+            return (
+              <div
+                key={att.id}
+                className="p-1.5 rounded-md bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 flex items-center justify-between gap-2 shadow-2xs"
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  {isImg ? (
+                    <img
+                      src={att.dataUrl}
+                      alt={att.name}
+                      className="w-7 h-7 rounded object-cover border border-neutral-200 dark:border-neutral-700 shrink-0"
+                    />
+                  ) : (
+                    <div className="w-7 h-7 rounded bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center shrink-0">
+                      <FileText className="w-3.5 h-3.5 text-neutral-500" />
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <div className="text-xs font-medium text-neutral-800 dark:text-neutral-200 truncate">{att.name}</div>
+                    <div className="text-[10px] text-neutral-400 font-mono">{att.sizeFormatted || 'File'}</div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveAttachment(att.id)}
+                  className="p-1 text-neutral-400 hover:text-rose-500 rounded transition-colors shrink-0"
+                  title="Remove file"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div
+          onClick={() => cardAttachmentInputRef.current?.click()}
+          className="border border-dashed border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 rounded-lg p-2.5 text-center cursor-pointer transition-colors"
+        >
+          <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
+            Click to upload one or more diagrams, formulas, or reference files for this card
+          </span>
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
@@ -224,6 +348,7 @@ export const CardEditorModal: React.FC<CardEditorModalProps> = ({
               setEditQuestion('');
               setEditAnswer('');
               setEditExplanation('');
+              setEditAttachments([]);
             }}
             className="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-500 transition-colors flex items-center gap-1 shrink-0"
           >
@@ -264,6 +389,9 @@ export const CardEditorModal: React.FC<CardEditorModalProps> = ({
                   className="w-full text-xs p-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 />
               </div>
+
+              {renderAttachmentEditor()}
+
               <div className="flex justify-end gap-2">
                 <button
                   onClick={() => setIsAddingNew(false)}
@@ -323,6 +451,9 @@ export const CardEditorModal: React.FC<CardEditorModalProps> = ({
                           className="w-full text-xs p-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
                         />
                       </div>
+
+                      {renderAttachmentEditor()}
+
                       <div className="flex justify-end gap-2">
                         <button
                           onClick={() => setEditingCardId(null)}
@@ -406,6 +537,28 @@ export const CardEditorModal: React.FC<CardEditorModalProps> = ({
                       <div className="text-xs text-neutral-600 dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-950/40 p-2 rounded-lg">
                         {card.answer}
                       </div>
+
+                      {/* Display card attachments if any */}
+                      {card.attachments && card.attachments.length > 0 && (
+                        <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                          {card.attachments.map((att) => {
+                            const isImg = att.mimeType.startsWith('image/') || att.dataUrl.startsWith('data:image/');
+                            return (
+                              <div
+                                key={att.id}
+                                className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-mono bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700"
+                              >
+                                {isImg ? (
+                                  <img src={att.dataUrl} alt={att.name} className="w-3.5 h-3.5 rounded object-cover" />
+                                ) : (
+                                  <Paperclip className="w-3 h-3 text-neutral-400" />
+                                )}
+                                <span className="truncate max-w-[140px]">{att.name}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
