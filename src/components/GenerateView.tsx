@@ -17,7 +17,8 @@ import {
   Tag,
   Files,
   Plus,
-  Paperclip
+  Paperclip,
+  Zap
 } from 'lucide-react';
 import { Flashcard, GenerationDifficulty, GenerationFormat, Deck } from '../types';
 import { safeApiPost } from '../utils/apiClient';
@@ -64,9 +65,11 @@ export const GenerateView: React.FC<GenerateViewProps> = ({ onDeckCreated, onCan
   const [difficulty, setDifficulty] = useState<GenerationDifficulty>('mixed');
   const [format, setFormat] = useState<GenerationFormat>('qa');
   const [focusTopic, setFocusTopic] = useState('');
+  const [turboSpeed, setTurboSpeed] = useState(true);
 
   // Generation states
   const [isGenerating, setIsGenerating] = useState(false);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [loadingStepIdx, setLoadingStepIdx] = useState(0);
   const [tipIdx, setTipIdx] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -82,21 +85,27 @@ export const GenerateView: React.FC<GenerateViewProps> = ({ onDeckCreated, onCan
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
 
-  // Cycle loading messages during generation
+  // Cycle loading messages and track elapsed time during generation
   useEffect(() => {
     let stepInterval: any;
     let tipInterval: any;
+    let timerInterval: any;
     if (isGenerating) {
+      setElapsedSeconds(0);
+      timerInterval = setInterval(() => {
+        setElapsedSeconds((s) => s + 1);
+      }, 1000);
       stepInterval = setInterval(() => {
         setLoadingStepIdx((prev) => (prev + 1) % LOADING_STEPS.length);
-      }, 2600);
+      }, 2400);
       tipInterval = setInterval(() => {
         setTipIdx((prev) => (prev + 1) % STUDY_TIPS.length);
-      }, 4500);
+      }, 4000);
     }
     return () => {
       clearInterval(stepInterval);
       clearInterval(tipInterval);
+      clearInterval(timerInterval);
     };
   }, [isGenerating]);
 
@@ -197,18 +206,23 @@ export const GenerateView: React.FC<GenerateViewProps> = ({ onDeckCreated, onCan
         combinedRawText = [combinedRawText, ...extractedTexts].filter(Boolean).join('\n\n--- Document Content ---\n\n');
       }
 
-      const res = await safeApiPost('/api/flashcards/generate', {
-        files: uploadedFiles.map((f) => ({
-          fileBase64: f.base64,
-          mimeType: f.mimeType,
-          fileName: f.name,
-        })),
-        rawText: combinedRawText,
-        count,
-        difficulty,
-        format,
-        focusTopic: focusTopic.trim() || undefined,
-      });
+      const res = await safeApiPost(
+        '/api/flashcards/generate',
+        {
+          files: uploadedFiles.map((f) => ({
+            fileBase64: f.base64,
+            mimeType: f.mimeType,
+            fileName: f.name,
+          })),
+          rawText: combinedRawText,
+          count,
+          difficulty,
+          format,
+          focusTopic: focusTopic.trim() || undefined,
+          turboSpeed,
+        },
+        240000 // 4 minutes timeout limit so long documents never abort at 60s
+      );
 
       if (!res.success || !res.data) {
         throw new Error(res.error || 'Failed to generate flashcards from Gemini.');
@@ -826,6 +840,39 @@ export const GenerateView: React.FC<GenerateViewProps> = ({ onDeckCreated, onCan
             className="w-full text-xs px-3 py-1.5 rounded-md border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
           />
         </div>
+
+        {/* Turbo Speed Option */}
+        <div className="flex items-center justify-between p-3 rounded-lg border border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/40 dark:bg-indigo-950/20">
+          <div className="flex items-start gap-2.5">
+            <Zap className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
+            <div>
+              <div className="text-xs font-semibold text-neutral-900 dark:text-white flex items-center gap-1.5">
+                <span>Turbo Speed (Recommended for Long Teacher Notes)</span>
+                <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 bg-indigo-600 text-white rounded">
+                  Fast
+                </span>
+              </div>
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                Processes long PDFs, lecture slides, and notes rapidly without 60-second timeouts.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={turboSpeed}
+            onClick={() => setTurboSpeed(!turboSpeed)}
+            className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+              turboSpeed ? 'bg-indigo-600' : 'bg-neutral-300 dark:bg-neutral-700'
+            }`}
+          >
+            <span
+              className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                turboSpeed ? 'translate-x-4' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        </div>
       </div>
 
       {/* Error Message */}
@@ -862,7 +909,12 @@ export const GenerateView: React.FC<GenerateViewProps> = ({ onDeckCreated, onCan
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl max-w-sm w-full p-6 text-center shadow-xl animate-in fade-in zoom-in-95 duration-150">
             <div className="w-10 h-10 rounded-lg bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 flex items-center justify-center mx-auto mb-3">
-              <BookOpen className="w-5 h-5" />
+              <Zap className="w-5 h-5 text-indigo-400" />
+            </div>
+
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-[11px] font-mono font-medium text-indigo-700 dark:text-indigo-300 mb-2">
+              <span className="w-2 h-2 rounded-full bg-indigo-500 animate-ping" />
+              <span>Processing: {elapsedSeconds}s</span>
             </div>
 
             <h3 className="text-sm font-bold text-neutral-900 dark:text-white mb-1">
@@ -874,7 +926,10 @@ export const GenerateView: React.FC<GenerateViewProps> = ({ onDeckCreated, onCan
             </p>
 
             <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-full h-1 overflow-hidden mb-4">
-              <div className="h-full bg-neutral-900 dark:bg-neutral-100 rounded-full w-2/3 transition-all duration-300" />
+              <div
+                className="h-full bg-indigo-600 dark:bg-indigo-400 rounded-full transition-all duration-300"
+                style={{ width: `${Math.min(95, 20 + elapsedSeconds * 5)}%` }}
+              />
             </div>
 
             <div className="p-2.5 rounded-md bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-[11px] text-neutral-500 dark:text-neutral-400">

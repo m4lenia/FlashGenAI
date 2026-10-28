@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
-import { GoogleGenAI, Type } from '@google/genai';
+import { GoogleGenAI, Type, ThinkingLevel } from '@google/genai';
 import mammoth from 'mammoth';
 
 dotenv.config();
@@ -95,6 +95,7 @@ apiRouter.post('/flashcards/generate', async (req: Request, res: Response) => {
       difficulty = 'medium',
       format = 'qa',
       focusTopic,
+      turboSpeed = true, // Default to Turbo Speed for long teacher documents and fast execution
     } = req.body;
 
     // Normalizing file list
@@ -190,6 +191,10 @@ ${processedText ? `\nExtracted Content / Additional Notes:\n"""\n${processedText
       contents: parts,
       config: {
         systemInstruction: systemPrompt,
+        thinkingConfig: {
+          thinkingLevel: turboSpeed ? ThinkingLevel.MINIMAL : ThinkingLevel.LOW,
+        },
+        temperature: 0.3,
         responseMimeType: 'application/json',
         responseSchema: {
           type: Type.ARRAY,
@@ -279,6 +284,10 @@ The distractors must:
 2. Represent common student misconceptions or closely related but distinct concepts.
 3. Be completely incorrect in the context of this specific question.`,
       config: {
+        thinkingConfig: {
+          thinkingLevel: ThinkingLevel.MINIMAL,
+        },
+        temperature: 0.2,
         responseMimeType: 'application/json',
         responseSchema: {
           type: Type.OBJECT,
@@ -328,6 +337,10 @@ ${instructions ? `User Request: ${instructions}` : 'Provide a clearer, more enga
 
 Generate an improved, high-quality replacement flashcard.`,
       config: {
+        thinkingConfig: {
+          thinkingLevel: ThinkingLevel.LOW,
+        },
+        temperature: 0.3,
         responseMimeType: 'application/json',
         responseSchema: {
           type: Type.OBJECT,
@@ -423,6 +436,10 @@ ${rawText ? `\nAdditional Source Notes:\n"""\n${rawText.slice(0, 40000)}\n"""\n`
       contents: parts,
       config: {
         systemInstruction: systemPrompt,
+        thinkingConfig: {
+          thinkingLevel: ThinkingLevel.LOW,
+        },
+        temperature: 0.3,
         responseMimeType: 'application/json',
         responseSchema: {
           type: Type.OBJECT,
@@ -508,6 +525,10 @@ apiRouter.post('/tests/generate-missed-flashcards', async (req: Request, res: Re
       model: 'gemini-3.8-flash',
       contents: `The student recently completed a test on "${topic}" and got the following questions incorrect:\n\n${missedList}\n\nGenerate targeted, high-yield spaced repetition flashcards specifically formulated to correct these misconceptions and reinforce the principles they missed. Formulate clear, active-recall Q&A pairs with explanations.`,
       config: {
+        thinkingConfig: {
+          thinkingLevel: ThinkingLevel.LOW,
+        },
+        temperature: 0.3,
         responseMimeType: 'application/json',
         responseSchema: {
           type: Type.ARRAY,
@@ -630,6 +651,10 @@ Deliver a top-tier, publication-quality study guide with clear markdown sections
       contents: parts,
       config: {
         systemInstruction: systemPrompt,
+        thinkingConfig: {
+          thinkingLevel: ThinkingLevel.LOW,
+        },
+        temperature: 0.3,
         responseMimeType: 'application/json',
         responseSchema: {
           type: Type.OBJECT,
@@ -769,6 +794,10 @@ User Request: ${taskInstruction}
 
 Generate a new, standalone study section that will be cleanly appended to their notebook.`,
       config: {
+        thinkingConfig: {
+          thinkingLevel: ThinkingLevel.LOW,
+        },
+        temperature: 0.3,
         responseMimeType: 'application/json',
         responseSchema: {
           type: Type.OBJECT,
@@ -863,6 +892,10 @@ Your goals:
       contents: chatContents,
       config: {
         systemInstruction,
+        thinkingConfig: {
+          thinkingLevel: ThinkingLevel.LOW,
+        },
+        temperature: 0.4,
       },
     });
 
@@ -902,6 +935,10 @@ ${content.slice(0, 45000)}
 Extract exactly ${count} high-yield, active recall flashcards directly from this study page.
 Formulate precise questions, authoritative answers, difficulty ratings, and short reinforcing explanations.`,
       config: {
+        thinkingConfig: {
+          thinkingLevel: ThinkingLevel.LOW,
+        },
+        temperature: 0.3,
         responseMimeType: 'application/json',
         responseSchema: {
           type: Type.ARRAY,

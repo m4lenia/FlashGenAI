@@ -14,7 +14,7 @@ export interface ApiResponse<T = any> {
 export async function safeApiPost<T = any>(
   endpoint: string,
   payload: any,
-  timeoutMs: number = 60000
+  timeoutMs: number = 240000 // 4 minutes timeout for long teacher documents & textbooks
 ): Promise<ApiResponse<T>> {
   try {
     let bodyString: string;
@@ -57,7 +57,7 @@ export async function safeApiPost<T = any>(
       if (fetchErr.name === 'AbortError') {
         return {
           success: false,
-          error: `Generation request timed out after ${Math.round(timeoutMs / 1000)} seconds. Try requesting fewer flashcards or uploading a shorter document.`,
+          error: `Generation request timed out after ${Math.round(timeoutMs / 1000)} seconds. For exceptionally long teacher materials (e.g. 50+ pages), enable Turbo Speed or split the document into smaller chapters.`,
           statusCode: 504,
         };
       }
