@@ -1,5 +1,4 @@
 import express, { Request, Response } from 'express';
-import { createServer as createViteServer } from 'vite';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
@@ -14,6 +13,17 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
+// Enable CORS for Vercel deployments, preview domains, and local dev
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 // Support large multi-file uploads (PDFs, images, slides)
 app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ extended: true, limit: '100mb' }));
@@ -21,7 +31,9 @@ app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 function getGeminiClient(): GoogleGenAI {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error('GEMINI_API_KEY is not set. Please configure your API key in Settings > Secrets.');
+    throw new Error(
+      'GEMINI_API_KEY is not configured. On Vercel, go to your Vercel Project Dashboard -> Settings -> Environment Variables, add GEMINI_API_KEY with your Google Gemini API key, and Redeploy.'
+    );
   }
   return new GoogleGenAI({
     apiKey,
@@ -59,8 +71,10 @@ async function callGeminiWithRetry(params: any, maxRetries = 2): Promise<any> {
   throw lastError;
 }
 
+const apiRouter = express.Router();
+
 // Health check endpoint
-app.get('/api/health', (_req: Request, res: Response) => {
+apiRouter.get('/health', (_req: Request, res: Response) => {
   res.json({
     status: 'ok',
     hasApiKey: !!process.env.GEMINI_API_KEY,
@@ -69,7 +83,7 @@ app.get('/api/health', (_req: Request, res: Response) => {
 });
 
 // Endpoint: Generate flashcards from multimodal files or raw text
-app.post('/api/flashcards/generate', async (req: Request, res: Response) => {
+apiRouter.post('/flashcards/generate', async (req: Request, res: Response) => {
   try {
     const {
       files, // Array of { fileBase64, mimeType, fileName }
@@ -243,7 +257,7 @@ ${processedText ? `\nExtracted Content / Additional Notes:\n"""\n${processedText
 });
 
 // Endpoint: Generate 3 plausible distractors (wrong answers) for Quiz Mode
-app.post('/api/flashcards/distractors', async (req: Request, res: Response) => {
+apiRouter.post('/flashcards/distractors', async (req: Request, res: Response) => {
   try {
     const { question, answer, topicContext } = req.body;
 
@@ -299,7 +313,7 @@ The distractors must:
 });
 
 // Endpoint: Regenerate single card
-app.post('/api/flashcards/regenerate-card', async (req: Request, res: Response) => {
+apiRouter.post('/flashcards/regenerate-card', async (req: Request, res: Response) => {
   try {
     const { originalQuestion, originalAnswer, instructions, topic } = req.body;
     const ai = getGeminiClient();
@@ -340,7 +354,7 @@ Generate an improved, high-quality replacement flashcard.`,
 });
 
 // Endpoint: Generate comprehensive Topic Test
-app.post('/api/tests/generate', async (req: Request, res: Response) => {
+apiRouter.post('/tests/generate', async (req: Request, res: Response) => {
   try {
     const {
       topic = 'General Study Topic',
@@ -474,7 +488,7 @@ ${rawText ? `\nAdditional Source Notes:\n"""\n${rawText.slice(0, 40000)}\n"""\n`
 });
 
 // Endpoint: Generate targeted corrective flashcards from missed test questions
-app.post('/api/tests/generate-missed-flashcards', async (req: Request, res: Response) => {
+apiRouter.post('/tests/generate-missed-flashcards', async (req: Request, res: Response) => {
   try {
     const { missedQuestions, topic } = req.body;
 
@@ -527,7 +541,7 @@ app.post('/api/tests/generate-missed-flashcards', async (req: Request, res: Resp
 // ==========================================
 
 // Endpoint: Generate comprehensive Turbo AI Study Page
-app.post('/api/studypages/generate', async (req: Request, res: Response) => {
+apiRouter.post('/studypages/generate', async (req: Request, res: Response) => {
   try {
     const {
       topic = 'Comprehensive Study Topic',
@@ -700,7 +714,7 @@ Deliver a top-tier, publication-quality study guide with clear markdown sections
 });
 
 // Endpoint: AI Add to Notes (Turbo AI Additions: Mnemonics, Comparison Tables, Practice Problems, Custom)
-app.post('/api/studypages/expand', async (req: Request, res: Response) => {
+apiRouter.post('/studypages/expand', async (req: Request, res: Response) => {
   try {
     const { studyPage, actionType, userPrompt } = req.body;
 
@@ -801,7 +815,7 @@ Generate a new, standalone study section that will be cleanly appended to their 
 });
 
 // Endpoint: Turbo AI Study Copilot Chat
-app.post('/api/studypages/copilot', async (req: Request, res: Response) => {
+apiRouter.post('/studypages/copilot', async (req: Request, res: Response) => {
   try {
     const { studyPage, question, history = [] } = req.body;
 
@@ -867,7 +881,7 @@ Your goals:
 });
 
 // Endpoint: Convert Study Page to Flashcard Deck
-app.post('/api/studypages/convert-to-cards', async (req: Request, res: Response) => {
+apiRouter.post('/studypages/convert-to-cards', async (req: Request, res: Response) => {
   try {
     const { studyPageTitle, content, count = 10 } = req.body;
 
@@ -916,11 +930,16 @@ Formulate precise questions, authoritative answers, difficulty ratings, and shor
   }
 });
 
+// Mount API router for both '/api/*' and root '/*' (in case Vercel rewrites strip '/api')
+app.use('/api', apiRouter);
+app.use(apiRouter);
+
 // Setup Vite middleware in dev or static files in production
 async function startServer() {
   const isProduction = process.env.NODE_ENV === 'production';
 
   if (!isProduction) {
+    const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: {
         middlewareMode: true,
@@ -943,7 +962,12 @@ async function startServer() {
   });
 }
 
-startServer().catch((err) => {
-  console.error('Failed to start server:', err);
-  process.exit(1);
-});
+// Only start standalone server if not running in Vercel serverless environment
+if (!process.env.VERCEL) {
+  startServer().catch((err) => {
+    console.error('Failed to start server:', err);
+    process.exit(1);
+  });
+}
+
+export default app;

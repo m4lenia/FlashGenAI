@@ -31,6 +31,8 @@ import {
   GraduationCap
 } from 'lucide-react';
 import { StudyPage, StudyPageSection, StudyPageCallout, StudyCopilotMessage, Deck, Flashcard } from '../types';
+import { safeApiPost } from '../utils/apiClient';
+import { processUploadFile } from '../utils/fileCompressor';
 
 interface StudyPagesViewProps {
   studyPages: StudyPage[];
@@ -130,25 +132,24 @@ export const StudyPagesView: React.FC<StudyPagesViewProps> = ({
     return matchesSearch && matchesSubject;
   });
 
-  // Handle File Upload for Generator
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle File Upload for Generator with automatic compression and text support
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      const base64 = result.split(',')[1] || '';
+    try {
+      const processed = await processUploadFile(file);
       setUploadedFile({
-        base64,
-        mimeType: file.type || 'text/plain',
-        name: file.name,
+        base64: processed.base64,
+        mimeType: processed.mimeType,
+        name: processed.name,
       });
       if (!newTopic) {
         setNewTopic(file.name.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' '));
       }
-    };
-    reader.readAsDataURL(file);
+    } catch (err: any) {
+      showNotice(`Failed to read file: ${err?.message || 'Error processing file'}`);
+    }
   };
 
   // Submit generate new study page
@@ -164,38 +165,33 @@ export const StudyPagesView: React.FC<StudyPagesViewProps> = ({
     }, 1800);
 
     try {
-      const res = await fetch('/api/studypages/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          topic: newTopic || 'Study Topic',
-          rawText: newNotesText,
-          fileBase64: uploadedFile?.base64,
-          mimeType: uploadedFile?.mimeType,
-          fileName: uploadedFile?.name,
-          level: newLevel,
-          subject: newSubject,
-        }),
+      const res = await safeApiPost('/api/studypages/generate', {
+        topic: newTopic || 'Study Topic',
+        rawText: newNotesText,
+        fileBase64: uploadedFile?.base64,
+        mimeType: uploadedFile?.mimeType,
+        fileName: uploadedFile?.name,
+        level: newLevel,
+        subject: newSubject,
       });
 
-      const data = await res.json();
       clearInterval(stepInterval);
 
-      if (data.success && data.studyPage) {
-        onCreateStudyPage(data.studyPage);
-        setSelectedPageId(data.studyPage.id);
+      if (res.success && res.data?.studyPage) {
+        onCreateStudyPage(res.data.studyPage);
+        setSelectedPageId(res.data.studyPage.id);
         setIsGeneratorOpen(false);
         setNewTopic('');
         setNewNotesText('');
         setUploadedFile(null);
-        showNotice(`Created Study Page: "${data.studyPage.title}" ✨`);
+        showNotice(`Created Study Page: "${res.data.studyPage.title}" ✨`);
       } else {
-        throw new Error(data.error || 'Failed to generate study page.');
+        throw new Error(res.error || 'Failed to generate study page.');
       }
     } catch (err: any) {
       clearInterval(stepInterval);
       console.error(err);
-      alert(err.message || 'Error generating study page.');
+      showNotice(err.message || 'Error generating study page.');
     } finally {
       setIsGeneratingPage(false);
     }
@@ -208,28 +204,23 @@ export const StudyPagesView: React.FC<StudyPagesViewProps> = ({
     setExpandingAction(actionType);
 
     try {
-      const res = await fetch('/api/studypages/expand', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          studyPage: activePage,
-          actionType,
-          userPrompt: promptOverride || customAddPrompt,
-        }),
+      const res = await safeApiPost('/api/studypages/expand', {
+        studyPage: activePage,
+        actionType,
+        userPrompt: promptOverride || customAddPrompt,
       });
 
-      const data = await res.json();
-      if (data.success && data.section) {
+      if (res.success && res.data?.section) {
         const updatedPage: StudyPage = {
           ...activePage,
-          sections: [...activePage.sections, data.section],
+          sections: [...activePage.sections, res.data.section],
           updatedAt: new Date().toISOString(),
         };
         onUpdateStudyPage(updatedPage);
         setCustomAddPrompt('');
-        showNotice(`Added "${data.section.title}" to your study page! 🚀`);
+        showNotice(`Added "${res.data.section.title}" to your study page! 🚀`);
       } else {
-        throw new Error(data.error || 'Failed to add AI notes.');
+        throw new Error(res.error || 'Failed to add AI notes.');
       }
     } catch (err: any) {
       console.error(err);
@@ -253,19 +244,14 @@ Key Takeaways: ${activePage.keyTakeaways.join('; ')}
 Sections:
 ${activePage.sections.map((s) => `### ${s.title}\n${s.content}`).join('\n\n')}`;
 
-      const res = await fetch('/api/studypages/convert-to-cards', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          studyPageTitle: activePage.title,
-          content: combinedText,
-          count: 12,
-        }),
+      const res = await safeApiPost('/api/studypages/convert-to-cards', {
+        studyPageTitle: activePage.title,
+        content: combinedText,
+        count: 12,
       });
 
-      const data = await res.json();
-      if (data.success && Array.isArray(data.flashcards)) {
-        const cards: Flashcard[] = data.flashcards.map((c: any, i: number) => ({
+      if (res.success && Array.isArray(res.data?.flashcards)) {
+        const cards: Flashcard[] = res.data.flashcards.map((c: any, i: number) => ({
           id: `card-sp-${Date.now()}-${i}`,
           question: c.question,
           answer: c.answer,
@@ -282,7 +268,7 @@ ${activePage.sections.map((s) => `### ${s.title}\n${s.content}`).join('\n\n')}`;
         onConvertPageToDeck(activePage.title, cards);
         showNotice(`Created new deck "${activePage.title}" with ${cards.length} flashcards! 🗂️`);
       } else {
-        throw new Error(data.error || 'Could not generate cards.');
+        throw new Error(res.error || 'Could not generate cards.');
       }
     } catch (err: any) {
       console.error(err);
@@ -309,35 +295,30 @@ ${activePage.sections.map((s) => `### ${s.title}\n${s.content}`).join('\n\n')}`;
     setIsCopilotLoading(true);
 
     try {
-      const res = await fetch('/api/studypages/copilot', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          studyPage: activePage,
-          question: textToSend.trim(),
-          history: copilotMessages.slice(-6),
-        }),
+      const res = await safeApiPost('/api/studypages/copilot', {
+        studyPage: activePage,
+        question: textToSend.trim(),
+        history: copilotMessages.slice(-6),
       });
 
-      const data = await res.json();
-      if (data.success && data.answer) {
+      if (res.success && res.data?.answer) {
         const assistantMsg: StudyCopilotMessage = {
           id: `ast-${Date.now()}`,
           role: 'assistant',
-          content: data.answer,
+          content: res.data.answer,
           timestamp: new Date().toISOString(),
           suggestedAction: {
             type: 'append_section',
             label: 'Add this explanation to notebook',
             data: {
               title: `AI Note: ${textToSend.slice(0, 30)}...`,
-              content: data.answer,
+              content: res.data.answer,
             },
           },
         };
         setCopilotMessages((prev) => [...prev, assistantMsg]);
       } else {
-        throw new Error(data.error || 'Copilot error.');
+        throw new Error(res.error || 'Copilot error.');
       }
     } catch (err: any) {
       console.error(err);

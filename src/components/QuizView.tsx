@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Deck, Flashcard } from '../types';
+import { safeApiPost } from '../utils/apiClient';
 
 interface QuizViewProps {
   deck: Deck;
@@ -64,21 +65,14 @@ export const QuizView: React.FC<QuizViewProps> = ({
         let hint = '';
 
         try {
-          const res = await fetch('/api/flashcards/distractors', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              question: card.question,
-              answer: card.answer,
-              topicContext: deck.title,
-            }),
+          const res = await safeApiPost('/api/flashcards/distractors', {
+            question: card.question,
+            answer: card.answer,
+            topicContext: deck.title,
           });
-          if (res.ok) {
-            const data = await res.json();
-            if (Array.isArray(data.distractors) && data.distractors.length >= 2) {
-              distractors = data.distractors.slice(0, 3);
-              hint = data.hint || '';
-            }
+          if (res.success && res.data && Array.isArray(res.data.distractors) && res.data.distractors.length >= 2) {
+            distractors = res.data.distractors.slice(0, 3);
+            hint = res.data.hint || '';
           }
         } catch (e) {
           console.warn('Distractor fetch error:', e);

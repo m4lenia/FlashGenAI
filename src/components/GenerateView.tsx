@@ -20,6 +20,8 @@ import {
   Paperclip
 } from 'lucide-react';
 import { Flashcard, GenerationDifficulty, GenerationFormat, Deck } from '../types';
+import { safeApiPost } from '../utils/apiClient';
+import { processUploadFile, formatBytes } from '../utils/fileCompressor';
 
 export interface UploadedFileItem {
   id: string;
@@ -29,6 +31,7 @@ export interface UploadedFileItem {
   name: string;
   sizeFormatted: string;
   size: number;
+  rawText?: string;
 }
 
 interface GenerateViewProps {
@@ -97,53 +100,34 @@ export const GenerateView: React.FC<GenerateViewProps> = ({ onDeckCreated, onCan
     };
   }, [isGenerating]);
 
-  // File size formatter
-  const formatBytes = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
-
-  // Process multiple files to Base64
-  const handleFiles = (incoming: FileList | File[]) => {
+  // Process multiple files with automatic image compression and text extraction
+  const handleFiles = async (incoming: FileList | File[]) => {
     setError(null);
     const newFiles = Array.from(incoming);
     if (newFiles.length === 0) return;
 
-    const currentTotalSize = uploadedFiles.reduce((acc, f) => acc + f.size, 0);
-    const newTotalSize = newFiles.reduce((acc, f) => acc + f.size, 0);
-
-    if (currentTotalSize + newTotalSize > 80 * 1024 * 1024) {
-      setError('Combined upload size exceeds 80MB. Please select fewer or smaller files.');
-      return;
-    }
-
-    newFiles.forEach((file) => {
-      if (file.size > 30 * 1024 * 1024) {
-        setError(`File "${file.name}" exceeds 30MB limit.`);
-        return;
+    for (const file of newFiles) {
+      if (file.size > 25 * 1024 * 1024) {
+        setError(`File "${file.name}" exceeds 25MB limit. Please upload a smaller file.`);
+        continue;
       }
 
       // Skip already uploaded duplicates
       if (uploadedFiles.some((f) => f.name === file.name && f.size === file.size)) {
-        return;
+        continue;
       }
 
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = reader.result as string;
-        const base64 = result.split(',')[1] || '';
-        const mimeType = file.type || 'application/octet-stream';
+      try {
+        const processed = await processUploadFile(file);
         const fileItem: UploadedFileItem = {
-          id: `file-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+          id: processed.id,
           file,
-          base64,
-          mimeType,
-          name: file.name,
-          sizeFormatted: formatBytes(file.size),
-          size: file.size,
+          base64: processed.base64,
+          mimeType: processed.mimeType,
+          name: processed.name,
+          sizeFormatted: processed.sizeFormatted,
+          size: processed.size,
+          rawText: processed.rawText,
         };
 
         setUploadedFiles((prev) => [...prev, fileItem]);
@@ -154,12 +138,10 @@ export const GenerateView: React.FC<GenerateViewProps> = ({ onDeckCreated, onCan
           const cleanName = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
           return cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
         });
-      };
-      reader.onerror = () => {
-        setError(`Failed to read "${file.name}". Please try again.`);
-      };
-      reader.readAsDataURL(file);
-    });
+      } catch (err: any) {
+        setError(`Failed to read "${file.name}": ${err?.message || 'Error processing file'}`);
+      }
+    }
   };
 
   const handleRemoveFile = (id: string) => {
@@ -187,7 +169,7 @@ export const GenerateView: React.FC<GenerateViewProps> = ({ onDeckCreated, onCan
     }
   };
 
-  // Trigger Gemini generation API
+  // Trigger Gemini generation API safely
   const handleGenerate = async () => {
     setError(null);
 
@@ -205,28 +187,34 @@ export const GenerateView: React.FC<GenerateViewProps> = ({ onDeckCreated, onCan
     setLoadingStepIdx(0);
 
     try {
-      const response = await fetch('/api/flashcards/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          files: uploadedFiles.map((f) => ({
-            fileBase64: f.base64,
-            mimeType: f.mimeType,
-            fileName: f.name,
-          })),
-          rawText: activeTab === 'text' ? rawText : undefined,
-          count,
-          difficulty,
-          format,
-          focusTopic: focusTopic.trim() || undefined,
-        }),
+      // Gather any raw text extracted from uploaded text/md documents
+      const extractedTexts = uploadedFiles
+        .map((f) => f.rawText)
+        .filter((t): t is string => Boolean(t && t.trim().length > 0));
+
+      let combinedRawText = activeTab === 'text' ? rawText : undefined;
+      if (extractedTexts.length > 0) {
+        combinedRawText = [combinedRawText, ...extractedTexts].filter(Boolean).join('\n\n--- Document Content ---\n\n');
+      }
+
+      const res = await safeApiPost('/api/flashcards/generate', {
+        files: uploadedFiles.map((f) => ({
+          fileBase64: f.base64,
+          mimeType: f.mimeType,
+          fileName: f.name,
+        })),
+        rawText: combinedRawText,
+        count,
+        difficulty,
+        format,
+        focusTopic: focusTopic.trim() || undefined,
       });
 
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Failed to generate flashcards from Gemini.');
+      if (!res.success || !res.data) {
+        throw new Error(res.error || 'Failed to generate flashcards from Gemini.');
       }
+
+      const data = res.data;
 
       // Format flashcards with SM-2 defaults
       const formattedCards: Flashcard[] = (data.flashcards || []).map((c: any, idx: number) => ({
@@ -247,7 +235,7 @@ export const GenerateView: React.FC<GenerateViewProps> = ({ onDeckCreated, onCan
       setGeneratedCards(formattedCards);
       setIsReviewing(true);
     } catch (err: any) {
-      console.error(err);
+      console.error('Generation error:', err);
       setError(err?.message || 'Failed to communicate with Gemini API. Please try again.');
     } finally {
       setIsGenerating(false);
@@ -279,33 +267,33 @@ export const GenerateView: React.FC<GenerateViewProps> = ({ onDeckCreated, onCan
   const handleRegenerateCard = async (card: Flashcard) => {
     setRegeneratingCardId(card.id);
     try {
-      const res = await fetch('/api/flashcards/regenerate-card', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          originalQuestion: card.question,
-          originalAnswer: card.answer,
-          topic: deckTitle || focusTopic,
-        }),
+      const res = await safeApiPost('/api/flashcards/regenerate-card', {
+        originalQuestion: card.question,
+        originalAnswer: card.answer,
+        topic: deckTitle || focusTopic,
       });
-      const data = await res.json();
-      if (data.success && data.card) {
+
+      if (res.success && res.data?.card) {
+        const newCard = res.data.card;
         setGeneratedCards((prev) =>
           prev.map((c) =>
             c.id === card.id
               ? {
                   ...c,
-                  question: data.card.question || c.question,
-                  answer: data.card.answer || c.answer,
-                  difficulty: data.card.difficulty || c.difficulty,
-                  explanation: data.card.explanation || c.explanation,
+                  question: newCard.question || c.question,
+                  answer: newCard.answer || c.answer,
+                  difficulty: newCard.difficulty || c.difficulty,
+                  explanation: newCard.explanation || c.explanation,
                 }
               : c
           )
         );
+      } else {
+        setError(res.error || 'Failed to regenerate card.');
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error('Failed to regenerate card:', e);
+      setError(e?.message || 'Failed to regenerate card.');
     } finally {
       setRegeneratingCardId(null);
     }

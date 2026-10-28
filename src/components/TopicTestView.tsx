@@ -28,6 +28,7 @@ import { User } from 'firebase/auth';
 import { Deck, TopicTest, TopicTestQuestion, TopicTestResult, Flashcard } from '../types';
 import { saveTestResult } from '../utils/storage';
 import { saveAccountTestResult } from '../utils/accountSync';
+import { safeApiPost } from '../utils/apiClient';
 
 interface TopicTestViewProps {
   decks: Deck[];
@@ -112,22 +113,18 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
     }
 
     try {
-      const response = await fetch('/api/tests/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          topic: topicTitle,
-          count: questionCount,
-          difficulty,
-          cardsContext: activeDeck ? activeDeck.cards : [],
-        }),
+      const res = await safeApiPost('/api/tests/generate', {
+        topic: topicTitle,
+        count: questionCount,
+        difficulty,
+        cardsContext: activeDeck ? activeDeck.cards : [],
       });
 
-      const data = await response.json();
-      if (!response.ok || !data.success || !data.test) {
-        throw new Error(data.error || 'Failed to generate topic test.');
+      if (!res.success || !res.data?.test) {
+        throw new Error(res.error || 'Failed to generate topic test.');
       }
 
+      const data = res.data;
       const test: TopicTest = {
         ...data.test,
         deckId: activeDeck?.id,
@@ -278,18 +275,13 @@ export const TopicTestView: React.FC<TopicTestViewProps> = ({
 
     setIsGeneratingFlashcards(true);
     try {
-      const res = await fetch('/api/tests/generate-missed-flashcards', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          missedQuestions: testResult.missedQuestions,
-          topic: testResult.topic,
-        }),
+      const res = await safeApiPost('/api/tests/generate-missed-flashcards', {
+        missedQuestions: testResult.missedQuestions,
+        topic: testResult.topic,
       });
 
-      const data = await res.json();
-      if (data.success && Array.isArray(data.flashcards) && data.flashcards.length > 0) {
-        const newCards: Flashcard[] = data.flashcards.map((c: any, idx: number) => ({
+      if (res.success && Array.isArray(res.data?.flashcards) && res.data.flashcards.length > 0) {
+        const newCards: Flashcard[] = res.data.flashcards.map((c: any, idx: number) => ({
           id: `card-missed-${Date.now()}-${idx}`,
           question: c.question,
           answer: c.answer,

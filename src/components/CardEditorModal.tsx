@@ -15,6 +15,8 @@ import {
   FileText
 } from 'lucide-react';
 import { Deck, Flashcard, CardAttachment } from '../types';
+import { safeApiPost } from '../utils/apiClient';
+import { processUploadFile } from '../utils/fileCompressor';
 
 interface CardEditorModalProps {
   deck: Deck;
@@ -56,23 +58,24 @@ export const CardEditorModal: React.FC<CardEditorModalProps> = ({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
   };
 
-  const handleAttachFiles = (files: FileList | File[]) => {
-    Array.from(files).forEach((file) => {
-      if (file.size > 15 * 1024 * 1024) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        const dataUrl = reader.result as string;
+  const handleAttachFiles = async (files: FileList | File[]) => {
+    for (const file of Array.from(files)) {
+      if (file.size > 15 * 1024 * 1024) continue;
+      try {
+        const processed = await processUploadFile(file);
+        const dataUrl = `data:${processed.mimeType};base64,${processed.base64}`;
         const newAtt: CardAttachment = {
-          id: `att-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-          name: file.name,
-          mimeType: file.type || 'application/octet-stream',
+          id: processed.id,
+          name: processed.name,
+          mimeType: processed.mimeType,
           dataUrl,
-          sizeFormatted: formatBytes(file.size),
+          sizeFormatted: processed.sizeFormatted,
         };
         setEditAttachments((prev) => [...prev, newAtt]);
-      };
-      reader.readAsDataURL(file);
-    });
+      } catch (e) {
+        console.warn('Failed to process card attachment:', e);
+      }
+    }
   };
 
   const handleRemoveAttachment = (attId: string) => {
@@ -154,26 +157,22 @@ export const CardEditorModal: React.FC<CardEditorModalProps> = ({
   const handleRegenerateCard = async (card: Flashcard) => {
     setRegeneratingId(card.id);
     try {
-      const res = await fetch('/api/flashcards/regenerate-card', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          originalQuestion: card.question,
-          originalAnswer: card.answer,
-          topic: deckTitle,
-        }),
+      const res = await safeApiPost('/api/flashcards/regenerate-card', {
+        originalQuestion: card.question,
+        originalAnswer: card.answer,
+        topic: deckTitle,
       });
-      const data = await res.json();
-      if (data.success && data.card) {
+      if (res.success && res.data?.card) {
+        const newCard = res.data.card;
         setCards((prev) =>
           prev.map((c) =>
             c.id === card.id
               ? {
                   ...c,
-                  question: data.card.question || c.question,
-                  answer: data.card.answer || c.answer,
-                  difficulty: data.card.difficulty || c.difficulty,
-                  explanation: data.card.explanation || c.explanation,
+                  question: newCard.question || c.question,
+                  answer: newCard.answer || c.answer,
+                  difficulty: newCard.difficulty || c.difficulty,
+                  explanation: newCard.explanation || c.explanation,
                 }
               : c
           )
