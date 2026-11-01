@@ -109,47 +109,55 @@ export const GenerateView: React.FC<GenerateViewProps> = ({ onDeckCreated, onCan
     };
   }, [isGenerating]);
 
-  // Process multiple files with automatic image compression and text extraction
+  // Process multiple files in parallel with automatic image compression and text extraction
   const handleFiles = async (incoming: FileList | File[]) => {
     setError(null);
     const newFiles = Array.from(incoming);
     if (newFiles.length === 0) return;
 
-    for (const file of newFiles) {
+    const validFiles = newFiles.filter((file) => {
       if (file.size > 25 * 1024 * 1024) {
         setError(`File "${file.name}" exceeds 25MB limit. Please upload a smaller file.`);
-        continue;
+        return false;
       }
-
-      // Skip already uploaded duplicates
       if (uploadedFiles.some((f) => f.name === file.name && f.size === file.size)) {
-        continue;
+        return false;
       }
+      return true;
+    });
 
-      try {
-        const processed = await processUploadFile(file);
-        const fileItem: UploadedFileItem = {
-          id: processed.id,
-          file,
-          base64: processed.base64,
-          mimeType: processed.mimeType,
-          name: processed.name,
-          sizeFormatted: processed.sizeFormatted,
-          size: processed.size,
-          rawText: processed.rawText,
-        };
+    if (validFiles.length === 0) return;
 
-        setUploadedFiles((prev) => [...prev, fileItem]);
+    try {
+      const processedResults = await Promise.all(
+        validFiles.map(async (file) => {
+          const processed = await processUploadFile(file);
+          const item: UploadedFileItem = {
+            id: processed.id,
+            file,
+            base64: processed.base64,
+            mimeType: processed.mimeType,
+            name: processed.name,
+            sizeFormatted: processed.sizeFormatted,
+            size: processed.size,
+            rawText: processed.rawText,
+          };
+          return item;
+        })
+      );
 
-        // Suggest deck title if not already set
-        setDeckTitle((prev) => {
-          if (prev) return prev;
-          const cleanName = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
-          return cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
-        });
-      } catch (err: any) {
-        setError(`Failed to read "${file.name}": ${err?.message || 'Error processing file'}`);
-      }
+      setUploadedFiles((prev) => [...prev, ...processedResults]);
+
+      // Suggest deck title if not already set
+      setDeckTitle((prev) => {
+        if (prev) return prev;
+        const first = processedResults[0];
+        if (!first) return prev;
+        const cleanName = first.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+        return cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+      });
+    } catch (err: any) {
+      setError(`Failed to read uploaded files: ${err?.message || 'Error processing file'}`);
     }
   };
 

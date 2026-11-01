@@ -71,6 +71,48 @@ async function callGeminiWithRetry(params: any, maxRetries = 2): Promise<any> {
   throw lastError;
 }
 
+/**
+ * Ultra-fast Gemini invocation engine (Turbo.ai / Knowt speed)
+ * Uses high-throughput gemini-3.1-flash-lite with ThinkingLevel.MINIMAL for ~2-4s response times,
+ * with automatic fallback to gemini-3.8-flash if needed.
+ */
+async function callGeminiFast(params: any): Promise<any> {
+  const preferredModel = params.model || 'gemini-3.1-flash-lite';
+  const fallbackModel = preferredModel === 'gemini-3.1-flash-lite' ? 'gemini-3.8-flash' : 'gemini-3.1-flash-lite';
+
+  const primaryParams = { ...params, model: preferredModel };
+  if (preferredModel === 'gemini-3.1-flash-lite') {
+    primaryParams.config = {
+      ...primaryParams.config,
+      thinkingConfig: { thinkingLevel: ThinkingLevel.MINIMAL },
+    };
+  } else if (primaryParams.config?.thinkingConfig?.thinkingLevel === ThinkingLevel.MINIMAL) {
+    primaryParams.config = {
+      ...primaryParams.config,
+      thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+    };
+  }
+
+  try {
+    return await callGeminiWithRetry(primaryParams, 1);
+  } catch (err: any) {
+    console.warn(`Primary fast model ${preferredModel} failed (${err?.message}), falling back to ${fallbackModel}...`);
+    const fallbackParams = { ...params, model: fallbackModel };
+    if (fallbackModel === 'gemini-3.8-flash') {
+      fallbackParams.config = {
+        ...fallbackParams.config,
+        thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+      };
+    } else if (fallbackModel === 'gemini-3.1-flash-lite') {
+      fallbackParams.config = {
+        ...fallbackParams.config,
+        thinkingConfig: { thinkingLevel: ThinkingLevel.MINIMAL },
+      };
+    }
+    return await callGeminiWithRetry(fallbackParams, 1);
+  }
+}
+
 const apiRouter = express.Router();
 
 // Health check endpoint
@@ -186,15 +228,16 @@ ${processedText ? `\nExtracted Content / Additional Notes:\n"""\n${processedText
 
     parts.push({ text: promptText });
 
-    const response = await callGeminiWithRetry({
-      model: 'gemini-3.8-flash',
+    const targetModel = turboSpeed !== false ? 'gemini-3.1-flash-lite' : 'gemini-3.8-flash';
+    const response = await callGeminiFast({
+      model: targetModel,
       contents: parts,
       config: {
         systemInstruction: systemPrompt,
         thinkingConfig: {
-          thinkingLevel: turboSpeed ? ThinkingLevel.MINIMAL : ThinkingLevel.LOW,
+          thinkingLevel: targetModel === 'gemini-3.1-flash-lite' ? ThinkingLevel.MINIMAL : ThinkingLevel.LOW,
         },
-        temperature: 0.3,
+        temperature: 0.2,
         responseMimeType: 'application/json',
         responseSchema: {
           type: Type.ARRAY,
@@ -272,8 +315,8 @@ apiRouter.post('/flashcards/distractors', async (req: Request, res: Response) =>
 
     const ai = getGeminiClient();
 
-    const response = await callGeminiWithRetry({
-      model: 'gemini-3.8-flash',
+    const response = await callGeminiFast({
+      model: 'gemini-3.1-flash-lite',
       contents: `Question: "${question}"
 Correct Answer: "${answer}"
 ${topicContext ? `Topic Context: "${topicContext}"` : ''}
@@ -327,8 +370,8 @@ apiRouter.post('/flashcards/regenerate-card', async (req: Request, res: Response
     const { originalQuestion, originalAnswer, instructions, topic } = req.body;
     const ai = getGeminiClient();
 
-    const response = await callGeminiWithRetry({
-      model: 'gemini-3.8-flash',
+    const response = await callGeminiFast({
+      model: 'gemini-3.1-flash-lite',
       contents: `Original Card:
 Question: ${originalQuestion}
 Answer: ${originalAnswer}
@@ -338,9 +381,9 @@ ${instructions ? `User Request: ${instructions}` : 'Provide a clearer, more enga
 Generate an improved, high-quality replacement flashcard.`,
       config: {
         thinkingConfig: {
-          thinkingLevel: ThinkingLevel.LOW,
+          thinkingLevel: ThinkingLevel.MINIMAL,
         },
-        temperature: 0.3,
+        temperature: 0.2,
         responseMimeType: 'application/json',
         responseSchema: {
           type: Type.OBJECT,
@@ -431,15 +474,15 @@ ${rawText ? `\nAdditional Source Notes:\n"""\n${rawText.slice(0, 40000)}\n"""\n`
 
     parts.push({ text: promptText });
 
-    const response = await callGeminiWithRetry({
-      model: 'gemini-3.8-flash',
+    const response = await callGeminiFast({
+      model: 'gemini-3.1-flash-lite',
       contents: parts,
       config: {
         systemInstruction: systemPrompt,
         thinkingConfig: {
-          thinkingLevel: ThinkingLevel.LOW,
+          thinkingLevel: ThinkingLevel.MINIMAL,
         },
-        temperature: 0.3,
+        temperature: 0.2,
         responseMimeType: 'application/json',
         responseSchema: {
           type: Type.OBJECT,
@@ -521,14 +564,14 @@ apiRouter.post('/tests/generate-missed-flashcards', async (req: Request, res: Re
       )
       .join('\n\n');
 
-    const response = await callGeminiWithRetry({
-      model: 'gemini-3.8-flash',
+    const response = await callGeminiFast({
+      model: 'gemini-3.1-flash-lite',
       contents: `The student recently completed a test on "${topic}" and got the following questions incorrect:\n\n${missedList}\n\nGenerate targeted, high-yield spaced repetition flashcards specifically formulated to correct these misconceptions and reinforce the principles they missed. Formulate clear, active-recall Q&A pairs with explanations.`,
       config: {
         thinkingConfig: {
-          thinkingLevel: ThinkingLevel.LOW,
+          thinkingLevel: ThinkingLevel.MINIMAL,
         },
-        temperature: 0.3,
+        temperature: 0.2,
         responseMimeType: 'application/json',
         responseSchema: {
           type: Type.ARRAY,
@@ -646,15 +689,15 @@ Deliver a top-tier, publication-quality study guide with clear markdown sections
 
     parts.push({ text: promptText });
 
-    const response = await callGeminiWithRetry({
-      model: 'gemini-3.8-flash',
+    const response = await callGeminiFast({
+      model: 'gemini-3.1-flash-lite',
       contents: parts,
       config: {
         systemInstruction: systemPrompt,
         thinkingConfig: {
-          thinkingLevel: ThinkingLevel.LOW,
+          thinkingLevel: ThinkingLevel.MINIMAL,
         },
-        temperature: 0.3,
+        temperature: 0.2,
         responseMimeType: 'application/json',
         responseSchema: {
           type: Type.OBJECT,
@@ -782,8 +825,8 @@ Summary: ${studyPage.summary}
 Existing Sections:
 ${(studyPage.sections || []).map((s: any) => `- ${s.title}: ${s.content.slice(0, 200)}...`).join('\n')}`;
 
-    const response = await callGeminiWithRetry({
-      model: 'gemini-3.8-flash',
+    const response = await callGeminiFast({
+      model: 'gemini-3.1-flash-lite',
       contents: `You are the Turbo AI Study Copilot.
 The user is studying this page:
 """
@@ -795,9 +838,9 @@ User Request: ${taskInstruction}
 Generate a new, standalone study section that will be cleanly appended to their notebook.`,
       config: {
         thinkingConfig: {
-          thinkingLevel: ThinkingLevel.LOW,
+          thinkingLevel: ThinkingLevel.MINIMAL,
         },
-        temperature: 0.3,
+        temperature: 0.2,
         responseMimeType: 'application/json',
         responseSchema: {
           type: Type.OBJECT,
@@ -887,15 +930,15 @@ Your goals:
       parts: [{ text: question }],
     });
 
-    const response = await callGeminiWithRetry({
-      model: 'gemini-3.8-flash',
+    const response = await callGeminiFast({
+      model: 'gemini-3.1-flash-lite',
       contents: chatContents,
       config: {
         systemInstruction,
         thinkingConfig: {
-          thinkingLevel: ThinkingLevel.LOW,
+          thinkingLevel: ThinkingLevel.MINIMAL,
         },
-        temperature: 0.4,
+        temperature: 0.3,
       },
     });
 
@@ -924,8 +967,8 @@ apiRouter.post('/studypages/convert-to-cards', async (req: Request, res: Respons
 
     const ai = getGeminiClient();
 
-    const response = await callGeminiWithRetry({
-      model: 'gemini-3.8-flash',
+    const response = await callGeminiFast({
+      model: 'gemini-3.1-flash-lite',
       contents: `Study Page Title: "${studyPageTitle}"
 Content:
 """
@@ -936,9 +979,9 @@ Extract exactly ${count} high-yield, active recall flashcards directly from this
 Formulate precise questions, authoritative answers, difficulty ratings, and short reinforcing explanations.`,
       config: {
         thinkingConfig: {
-          thinkingLevel: ThinkingLevel.LOW,
+          thinkingLevel: ThinkingLevel.MINIMAL,
         },
-        temperature: 0.3,
+        temperature: 0.2,
         responseMimeType: 'application/json',
         responseSchema: {
           type: Type.ARRAY,
